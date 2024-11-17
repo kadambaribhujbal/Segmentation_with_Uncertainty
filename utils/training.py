@@ -44,7 +44,9 @@ def save_weights(model, epoch, loss, err, mode):
 
 def load_weights(model, fpath):
     print("loading weights '{}'".format(fpath))
-    weights = torch.load(fpath)
+
+    weights = torch.load(fpath, weights_only=True)
+    # weights = torch.load(fpath)
     startEpoch = weights["startEpoch"]
     # model.load_state_dict(weights["state_dict"])
     model.load_state_dict(weights["model_state_dict"])
