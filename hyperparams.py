@@ -6,7 +6,7 @@ def get_hyperparams():
         "num_classes": 12,
         "learning_rate": 1e-4,
         # "learning_rate": 0.001,
-        "dropout": 0.2,
+        "dropout": 0.5,
         "lr_decay": 0.995,
         # "lr_decay": 1e-4,
         "decay_per_n_epoch": 1,
