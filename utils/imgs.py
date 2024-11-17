@@ -51,7 +51,11 @@ def view_annotated(tensor, plot=True, n=0, path=None, mode="target"):
     rgb[:, :, 1] = g / 255.0  # [:,:,1]
     rgb[:, :, 2] = b / 255.0  # [:,:,2]
 
-    path = path + "{}-{}.png".format(n, mode)
+    save_imgs = "/content/combined/"
+    path = save_imgs + "{}-{}.png".format(n, mode)
+
+    # path = path + "{}-{}.png".format(n, mode)
+
     if plot:
         plt.imshow(rgb)
         plt.title(mode)
@@ -74,7 +78,13 @@ def decode_image(tensor):
 def view_image(tensor, plot=True, path=None, n=0, mode="pred"):
     inp = decode_image(tensor)
     inp = np.clip(inp, 0, 1)
-    path = path + "{}-{}.png".format(n, mode)
+
+    save_imgs = "/content/combined/"
+    path = save_imgs + "{}-{}.png".format(n, mode)
+
+
+    # path = path + "{}-{}.png".format(n, mode)
+
     if plot:
         plt.imshow(inp)
         plt.title(mode)
@@ -96,7 +106,11 @@ def view_image_with_uncertainty(tensor1, tensor2, path=None, n=0, mode="epistemi
     plt.colorbar()
     plt.title(mode)
     plt.show()
-    path = path + "{}-{}.png".format(n, mode)
+
+    save_imgs = "/content/combined/"
+    path = save_imgs + "{}-{}.png".format(n, mode)
+
+    # path = path + "{}-{}.png".format(n, mode)
     if path:
         plt.savefig(path)
         plt.close()

@@ -32,9 +32,12 @@ CAMVID_PATH = "./CamVid/CamVid/"
 
 RESULTS_PATH = Path("/content/results/")
 WEIGHTS_PATH = Path("/content/weights/")
+SAVE_IMGS = Path("/content/combined/")
 
 RESULTS_PATH.mkdir(exist_ok=True)
 WEIGHTS_PATH.mkdir(exist_ok=True)
+SAVE_IMGS.mkdir(exist_ok=True)
+
 batch_size = hyper["batch_size"]
 
 normalize = transforms.Normalize(mean=camvid.mean, std=camvid.std)

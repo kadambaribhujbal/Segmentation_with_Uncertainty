@@ -16,8 +16,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from . import imgs as img_utils
 
-RESULTS_PATH = ".results/"
-WEIGHTS_PATH = ".weights/"
+# RESULTS_PATH = ".results/"
+# WEIGHTS_PATH = ".weights/"
+
+RESULTS_PATH = "/content/results/"
+WEIGHTS_PATH = "/content/weights/"
+
 
 hyper = get_hyperparams()
 batch_size = hyper["batch_size"]
@@ -299,6 +303,7 @@ def view_sample_predictions(model, loader, n):
 def view_sample_predictions_with_uncertainty(
     model, inputs, targets, n, test_trials=2
 ):
+    # Dropout for MC Sampling
     model.train()
     # data = Variable(inputs.cuda(), volatile=True).view(1, 3, img_shape[0], img_shape[1])
     with torch.no_grad():
@@ -313,8 +318,8 @@ def view_sample_predictions_with_uncertainty(
         outputs = torch.cat([outputs, output], dim=0)
     predictive_mean = outputs.mean(dim=0)  # mean
     pred = get_predictions(predictive_mean)[0]
-    # base_path = "./combined/"
-    base_path = "/content/combined/"
+    base_path = "./combined/"
+    # base_path = "/content/combined/"
     # uncertainty
     epistemic = get_epistemic(outputs, predictive_mean, test_trials)  # check shape
     aleatoric = log_var[0]
