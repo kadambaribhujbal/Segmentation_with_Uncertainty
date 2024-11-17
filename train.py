@@ -153,6 +153,7 @@ elif mode == "combined":
     train = train_utils.train_aleatoric
 
 if __name__ == "__main__":
+    # maximum value that can be held by a variable
     val_tmp = sys.maxsize
     print("Mode: {}".format(mode))
     for epoch in range(1, N_EPOCHS + 1):

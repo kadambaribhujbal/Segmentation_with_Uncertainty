@@ -280,7 +280,7 @@ def test_combined(model, test_loader, criterion, test_trials=20, epoch=1):
 
         # target = Variable(target.cuda())
 
-        target = data.cuda()
+        target = target.cuda()
 
 
         outputs, log_var = model(data)
