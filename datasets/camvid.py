@@ -11,6 +11,8 @@ classes = ['Sky', 'Building', 'Column-Pole', 'Road',
            'Bicyclist', 'Void']
 
 # https://github.com/yandex/segnet-torch/blob/master/datasets/camvid-gen.lua
+
+# Handle class imbalance during training by assigning larger weights to rare classes
 class_weight = torch.FloatTensor([
     0.58872014284134, 0.51052379608154, 2.6966278553009,
     0.45021694898605, 1.1785038709641, 0.77028578519821, 2.4782588481903,
@@ -45,7 +47,7 @@ def _make_dataset(dir):
                 images.append(item)
     return images
 
-
+# convert PIL or numpy to pytorch tensor for type long
 class LabelToLongTensor(object):
     def __call__(self, pic):
         if isinstance(pic, np.ndarray):
@@ -62,7 +64,7 @@ class LabelToLongTensor(object):
 
         return label
 
-
+# convert the tensor to image based on the class color
 class LabelTensorToPILImage(object):
     def __call__(self, label):
         label = label.unsqueeze(0)
@@ -82,7 +84,8 @@ class LabelTensorToPILImage(object):
 
 
 class CamVid(data.Dataset):
-
+    # joint_transform : transform both img and targ
+    # target_transform: only target
     def __init__(self, root, split='train', joint_transform=None,
                  transform=None, target_transform=LabelToLongTensor(),
                  download=False,

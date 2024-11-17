@@ -48,31 +48,40 @@ train_joint_transformer = transforms.Compose(
     ]
 )
 
+# dataset prep
 train_dset = camvid.CamVid(
     CAMVID_PATH,
     "train",
+    # data augmentation for both image and label
     joint_transform=train_joint_transformer,
     transform=transforms.Compose([transforms.ToTensor(), normalize]),
 )
 
+# dataloader creation
 train_loader = torch.utils.data.DataLoader(
     train_dset, batch_size=batch_size, shuffle=True
 )
 
+# dataset prep
 val_dset = camvid.CamVid(
     CAMVID_PATH,
     "val",
     joint_transform=None,
     transform=transforms.Compose([transforms.ToTensor(), normalize]),
 )
+
+# dataloader creation
 val_loader = torch.utils.data.DataLoader(val_dset, batch_size=batch_size, shuffle=False)
 
+# dataset prep
 test_dset = camvid.CamVid(
     CAMVID_PATH,
     "test",
     joint_transform=None,
     transform=transforms.Compose([transforms.ToTensor(), normalize]),
 )
+
+# dataloader creation
 test_loader = torch.utils.data.DataLoader(
     test_dset, batch_size=batch_size, shuffle=False
 )
@@ -86,8 +95,8 @@ inputs, targets = next(iter(train_loader))
 print("Inputs: ", inputs.size())
 print("Targets: ", targets.size())
 
-# utils.imgs.view_image(inputs[0])
-# utils.imgs.view_annotated(targets[0])
+utils.imgs.view_image(inputs[0])
+utils.imgs.view_annotated(targets[0])
 
 # _criterion = nn.NLLLoss2d(weight=camvid.class_weight.cuda(), reduction="none").cuda()
 _criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cuda()
@@ -115,7 +124,7 @@ if mode == "base":
     model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).cuda()
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = nn.NLLLoss2d(weight=camvid.class_weight.cuda()).cuda()
+    criterion = nn.NLLLoss(weight=camvid.class_weight.cuda()).cuda()
     test = train_utils.test
     train = train_utils.train
 
@@ -123,7 +132,7 @@ elif mode == "epistemic":
     model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).cuda()
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = nn.NLLLoss2d(weight=camvid.class_weight.cuda()).cuda()
+    criterion = nn.NLLLoss(weight=camvid.class_weight.cuda()).cuda()
     test = train_utils.test_epistemic
     train = train_utils.train
 

@@ -100,16 +100,25 @@ def train(model, trn_loader, optimizer, criterion, epoch):
     for idx, data in enumerate(trn_loader):
         if list(data[0].size())[0] != batch_size:
             break
-        inputs = Variable(data[0].cuda())
-        targets = Variable(data[1].cuda())
+        # inputs = Variable(data[0].cuda())
+        # targets = Variable(data[1].cuda())
+
+        inputs = data[0].cuda()
+        targets = data[1].cuda()
+
         optimizer.zero_grad()
         output = model(inputs)[0]  # [2, 12, 360, 480]
         loss = criterion(output, targets)
         loss.backward()
         optimizer.step()
-        trn_loss += loss.data
+
+        trn_loss += loss.item()
+        # trn_loss += loss.data
+
         pred = get_predictions(output)
-        trn_error += error(pred, targets.data.cpu())
+        # trn_error += error(pred, targets.data.cpu())
+        trn_error += error(pred, targets.cpu())
+
     trn_loss /= len(trn_loader)
     trn_error /= len(trn_loader)
     torch.cuda.empty_cache()
@@ -124,16 +133,23 @@ def train_aleatoric(model, trn_loader, optimizer, criterion, epoch):
     for idx, data in enumerate(trn_loader):
         if list(data[0].size())[0] != batch_size:
             break
-        inputs = Variable(data[0].cuda())
-        targets = Variable(data[1].cuda())
+        # inputs = Variable(data[0].cuda())
+        # targets = Variable(data[1].cuda())
+
+        inputs = data[0].cuda()
+        targets = data[1].cuda()
+
+
         optimizer.zero_grad()
         output, logvar = model(inputs)  # tuple of [output, log_var]
         loss = criterion((output, logvar), targets)
         loss.backward()
         optimizer.step()
-        trn_loss += loss.data
+        trn_loss += loss.item()
+        # trn_loss += loss.data
         pred = get_predictions(output)
-        trn_error += error(pred, targets.data.cpu())
+        # trn_error += error(pred, targets.data.cpu())
+        trn_error += error(pred, targets.cpu())
     trn_loss /= len(trn_loader)
     trn_error /= len(trn_loader)
     torch.cuda.empty_cache()
@@ -154,8 +170,14 @@ def test(model, test_loader, criterion, epoch=1):
     for data, target in test_loader:
         if list(data.size())[0] != batch_size:
             break
-        data = Variable(data.cuda(), volatile=True)
-        target = Variable(target.cuda())
+        # data = Variable(data.cuda(), volatile=True)
+        # target = Variable(target.cuda())
+
+        with torch.no_grad():
+            data = data.cuda()
+
+        target = data.cuda()
+
         output = model(data)[0]
         test_loss += criterion(output, target).data
         pred = get_predictions(output)
@@ -180,8 +202,14 @@ def test_aleatoric(model, test_loader, criterion, epoch=1):
     for data, target in test_loader:
         if list(data.size())[0] != batch_size:
             break
-        data = Variable(data.cuda(), volatile=True)
-        target = Variable(target.cuda())
+        # data = Variable(data.cuda(), volatile=True)
+        # target = Variable(target.cuda())
+
+        with torch.no_grad():
+            data = data.cuda()
+
+        target = data.cuda()
+
         output = model(data)
         test_loss += criterion(output, target).data
         pred = get_predictions(output[0])
@@ -208,8 +236,15 @@ def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
         print(torch.cuda.memory_allocated(device=0))
         if list(data.size())[0] != batch_size:
             break
-        data = Variable(data.cuda(), volatile=True)
-        target = Variable(target.cuda())
+        # data = Variable(data.cuda(), volatile=True)
+        # target = Variable(target.cuda())
+
+        with torch.no_grad():
+            data = data.cuda()
+
+        target = data.cuda()
+
+
         outputs = model(data)[0].data
         for i in range(test_trials - 1):
             outputs += model(data)[0].data
@@ -243,7 +278,11 @@ def test_combined(model, test_loader, criterion, test_trials=20, epoch=1):
         with torch.no_grad():
             data = data.cuda()
 
-        target = Variable(target.cuda())
+        # target = Variable(target.cuda())
+
+        target = data.cuda()
+
+
         outputs, log_var = model(data)
         outputs = outputs.data
         for i in range(test_trials - 1):
@@ -279,8 +318,12 @@ def predict(model, input_loader, n_batches=1):
     predictions = []
     model.eval()
     for input, target in input_loader:
-        data = Variable(input.cuda(), volatile=True)
-        label = Variable(target.cuda())
+
+        # data = Variable(input.cuda(), volatile=True)
+        # label = Variable(target.cuda())
+        with torch.no_grad():
+            data = data.cuda()
+        label = target.cuda()
         output = model(data)
         pred = get_predictions(output)
         predictions.append([input, target, pred])
@@ -289,8 +332,12 @@ def predict(model, input_loader, n_batches=1):
 
 def view_sample_predictions(model, loader, n):
     inputs, targets = next(iter(loader))
-    data = Variable(inputs.cuda(), volatile=True)
-    label = Variable(targets.cuda())
+    # data = Variable(inputs.cuda(), volatile=True)
+    # label = Variable(targets.cuda())
+    with torch.no_grad():
+            data = data.cuda()
+    label = targets.cuda()
+    
     output = model(data)[0]
     pred = get_predictions(output)
     batch_size = inputs.size(0)
@@ -308,8 +355,8 @@ def view_sample_predictions_with_uncertainty(
     # data = Variable(inputs.cuda(), volatile=True).view(1, 3, img_shape[0], img_shape[1])
     with torch.no_grad():
         data = inputs.cuda().view(1, 3, img_shape[0], img_shape[1])
-
-    label = Variable(targets.cuda())
+    label = targets.cuda()
+    # label = Variable(targets.cuda())
     output, log_var = model(data)
     shape = (1, 1, num_classes, img_shape[0], img_shape[1])
     outputs = model(data)[0].view(shape).data
