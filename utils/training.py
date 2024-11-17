@@ -112,12 +112,12 @@ def train(model, trn_loader, optimizer, criterion, epoch):
         loss.backward()
         optimizer.step()
 
-        trn_loss += loss.item()
-        # trn_loss += loss.data
+        # trn_loss += loss.item()
+        trn_loss += loss.data
 
         pred = get_predictions(output)
-        # trn_error += error(pred, targets.data.cpu())
-        trn_error += error(pred, targets.cpu())
+        trn_error += error(pred, targets.data.cpu())
+        # trn_error += error(pred, targets.cpu())
 
     trn_loss /= len(trn_loader)
     trn_error /= len(trn_loader)
@@ -145,11 +145,11 @@ def train_aleatoric(model, trn_loader, optimizer, criterion, epoch):
         loss = criterion((output, logvar), targets)
         loss.backward()
         optimizer.step()
-        trn_loss += loss.item()
-        # trn_loss += loss.data
+        # trn_loss += loss.item()
+        trn_loss += loss.data
         pred = get_predictions(output)
-        # trn_error += error(pred, targets.data.cpu())
-        trn_error += error(pred, targets.cpu())
+        trn_error += error(pred, targets.data.cpu())
+        # trn_error += error(pred, targets.cpu())
     trn_loss /= len(trn_loader)
     trn_error /= len(trn_loader)
     torch.cuda.empty_cache()
