@@ -297,7 +297,7 @@ def view_sample_predictions(model, loader, n):
 
 
 def view_sample_predictions_with_uncertainty(
-    model, inputs, targets, n, test_trials=100
+    model, inputs, targets, n, test_trials=2
 ):
     model.train()
     # data = Variable(inputs.cuda(), volatile=True).view(1, 3, img_shape[0], img_shape[1])
@@ -313,7 +313,8 @@ def view_sample_predictions_with_uncertainty(
         outputs = torch.cat([outputs, output], dim=0)
     predictive_mean = outputs.mean(dim=0)  # mean
     pred = get_predictions(predictive_mean)[0]
-    base_path = "./combined/"
+    # base_path = "./combined/"
+    base_path = "/content/combined/"
     # uncertainty
     epistemic = get_epistemic(outputs, predictive_mean, test_trials)  # check shape
     aleatoric = log_var[0]
