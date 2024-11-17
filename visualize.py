@@ -27,8 +27,11 @@ assert mode in ["base", "epistemic", "aleatoric", "combined"], "Wrong mode!"
 
 # CAMVID_PATH = Path('./CamVid/Camvid/')
 CAMVID_PATH = "./CamVid/CamVid/"
-RESULTS_PATH = Path(".results/")
-WEIGHTS_PATH = Path(".weights/")
+# RESULTS_PATH = Path(".results/")
+# WEIGHTS_PATH = Path(".weights/")
+RESULTS_PATH = Path("/content/results/")
+WEIGHTS_PATH = Path("/content/weights/")
+
 RESULTS_PATH.mkdir(exist_ok=True)
 WEIGHTS_PATH.mkdir(exist_ok=True)
 batch_size = hyper["batch_size"]
@@ -85,8 +88,17 @@ LR_DECAY = hyper["lr_decay"]
 DECAY_EVERY_N_EPOCHS = hyper["decay_per_n_epoch"]
 N_EPOCHS = hyper["n_epoch"]
 
+# Load the most recent weight file from WEIGHTS_PATH
+weights_files = list(WEIGHTS_PATH.glob("*.pth"))
+if weights_files:
+    latest_weight_file = max(weights_files, key=lambda f: f.stat().st_mtime)
+    model_path = latest_weight_file
+    print(f"Loading weights from: {model_path}")
+else:
+    raise FileNotFoundError("No weight files found in the specified directory.")
+
 # load combined model
-model_path = "./.weights/weights-combined-11-27987.752-0.343.pth"
+# model_path = "./.weights/weights-combined-11-27987.752-0.343.pth"
 model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
 load_weights(model, model_path)
 

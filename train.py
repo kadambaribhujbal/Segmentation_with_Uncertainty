@@ -27,11 +27,11 @@ assert mode in ["base", "epistemic", "aleatoric", "combined"], "Wrong mode!"
 
 # CAMVID_PATH = Path('./CamVid/Camvid/')
 CAMVID_PATH = "./CamVid/CamVid/"
-RESULTS_PATH = Path(".results/")
-WEIGHTS_PATH = Path(".weights/")
+# RESULTS_PATH = Path(".results/")
+# WEIGHTS_PATH = Path(".weights/")
 
-# RESULTS_PATH = Path("/content/.results/")
-# WEIGHTS_PATH = Path("/content/.weights/")
+RESULTS_PATH = Path("/content/results/")
+WEIGHTS_PATH = Path("/content/weights/")
 
 RESULTS_PATH.mkdir(exist_ok=True)
 WEIGHTS_PATH.mkdir(exist_ok=True)
