@@ -184,6 +184,7 @@ if __name__ == "__main__":
     weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
     torch.save({
         'epoch': epoch,
+        'startEpoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'val_loss': val_loss,
