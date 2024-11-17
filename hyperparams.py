@@ -5,10 +5,10 @@ def get_hyperparams():
         "image_shape": [360, 480],
         "num_classes": 12,
         "learning_rate": 1e-4,
-        "dropout": 0.5,
+        "dropout": 0.2,
         "lr_decay": 0.995,
         "decay_per_n_epoch": 1,
-        "n_epoch": 2,
+        "n_epoch": 20,
         "model": "FCDenseNet103",
         "mode": "combined",
     }
