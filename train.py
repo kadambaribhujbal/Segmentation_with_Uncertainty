@@ -189,5 +189,7 @@ if __name__ == "__main__":
         'optimizer_state_dict': optimizer.state_dict(),
         'val_loss': val_loss,
         'val_err': val_err,
+        'loss': val_loss,
+        'error': val_err,
     }, weights_filename)
     print(f"Model weights saved to {weights_filename}")
