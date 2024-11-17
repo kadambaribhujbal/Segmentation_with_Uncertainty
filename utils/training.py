@@ -298,7 +298,10 @@ def view_sample_predictions_with_uncertainty(
     model, inputs, targets, n, test_trials=100
 ):
     model.train()
-    data = Variable(inputs.cuda(), volatile=True).view(1, 3, img_shape[0], img_shape[1])
+    # data = Variable(inputs.cuda(), volatile=True).view(1, 3, img_shape[0], img_shape[1])
+    with torch.no_grad():
+        data = inputs.cuda().view(1, 3, img_shape[0], img_shape[1])
+
     label = Variable(targets.cuda())
     output, log_var = model(data)
     shape = (1, 1, num_classes, img_shape[0], img_shape[1])
