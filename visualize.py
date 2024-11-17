@@ -89,7 +89,7 @@ DECAY_EVERY_N_EPOCHS = hyper["decay_per_n_epoch"]
 N_EPOCHS = hyper["n_epoch"]
 
 # Load the most recent weight file from WEIGHTS_PATH
-weights_files = list(RESULTS_PATH.glob("*.pth"))
+weights_files = list(WEIGHTS_PATH.glob("*.pth"))
 if weights_files:
     latest_weight_file = max(weights_files, key=lambda f: f.stat().st_mtime)
     model_path = latest_weight_file
