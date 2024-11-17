@@ -8,7 +8,7 @@ def get_hyperparams():
         "dropout": 0.5,
         "lr_decay": 0.995,
         "decay_per_n_epoch": 1,
-        "n_epoch": 20,
+        "n_epoch": 2,
         "model": "FCDenseNet103",
         "mode": "combined",
     }
