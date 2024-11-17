@@ -262,7 +262,8 @@ def adjust_learning_rate(lr, decay, optimizer, cur_epoch, n_epochs):
 
 def weights_init(m):
     if isinstance(m, nn.Conv2d):
-        nn.init.kaiming_uniform(m.weight)
+        # nn.init.kaiming_uniform(m.weight)
+        nn.init.kaiming_uniform_(m.weight)
         m.bias.data.zero_()
 
 
