@@ -232,7 +232,10 @@ def test_combined(model, test_loader, criterion, test_trials=20, epoch=1):
     for data, target in test_loader:
         if list(data.size())[0] != batch_size:
             break
-        data = Variable(data.cuda(), volatile=True)
+        # data = Variable(data.cuda(), volatile=True)
+        with torch.no_grad():
+            data = data.cuda()
+
         target = Variable(target.cuda())
         outputs, log_var = model(data)
         outputs = outputs.data

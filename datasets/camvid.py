@@ -52,7 +52,9 @@ class LabelToLongTensor(object):
             # handle numpy array
             label = torch.from_numpy(pic).long()
         else:
-            label = torch.ByteTensor(torch.ByteStorage.from_buffer(pic.tobytes()))
+            # label = torch.ByteTensor(torch.ByteStorage.from_buffer(pic.tobytes()))
+            label = torch.frombuffer(pic.tobytes(), dtype=torch.uint8)
+
             label = label.view(pic.size[1], pic.size[0], 1)
             label = label.transpose(0, 1).transpose(0, 2).squeeze().contiguous().long()
         return label

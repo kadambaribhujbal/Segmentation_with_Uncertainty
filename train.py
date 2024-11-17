@@ -82,7 +82,8 @@ print("Targets: ", targets.size())
 # utils.imgs.view_image(inputs[0])
 # utils.imgs.view_annotated(targets[0])
 
-_criterion = nn.NLLLoss2d(weight=camvid.class_weight.cuda(), reduction="none").cuda()
+# _criterion = nn.NLLLoss2d(weight=camvid.class_weight.cuda(), reduction="none").cuda()
+_criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cuda()
 
 
 def custom_cirterion(y_pred, y_true):
