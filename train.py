@@ -154,7 +154,44 @@ def custom_cirterion(y_pred, y_true):
 #     total_loss = nll_loss.sum() + reg_loss
 #     return total_loss
 
+# IoU Calculation Function
+def compute_iou(pred, target, n_classes=12):
+    """Compute IoU for each class and mean IoU."""
+    pred = pred.flatten()
+    target = target.flatten()
+    ious = []
+    for cls in range(n_classes):
+        pred_cls = pred == cls
+        target_cls = target == cls
+        intersection = (pred_cls & target_cls).sum()
+        union = (pred_cls | target_cls).sum()
+        if union > 0:
+            ious.append(intersection / union)
+    return np.mean(ious)
 
+# Precision and Recall Calculation Function
+def compute_precision_recall(pred, target, n_classes=12):
+    """Compute precision and recall for each class and mean values."""
+    precision = []
+    recall = []
+    for cls in range(n_classes):
+        tp = ((pred == cls) & (target == cls)).sum()
+        fp = ((pred == cls) & (target != cls)).sum()
+        fn = ((pred != cls) & (target == cls)).sum()
+
+        prec = tp / (tp + fp + 1e-8)
+        rec = tp / (tp + fn + 1e-8)
+
+        precision.append(prec)
+        recall.append(rec)
+    return np.mean(precision), np.mean(recall)
+
+# Entropy Map Calculation Function
+def compute_entropy_map(prob_map):
+    """Compute entropy map from probability map."""
+    prob_map = prob_map.cpu().numpy()
+    entropy_map = -np.sum(prob_map * np.log(prob_map + 1e-12), axis=0)
+    return entropy_map
 
 # hyperparameters
 LR = hyper["learning_rate"]
@@ -196,12 +233,74 @@ elif mode == "combined":
     test = train_utils.test_combined
     train = train_utils.train_aleatoric
 
+# if __name__ == "__main__":
+#     # maximum value that can be held by a variable
+#     val_tmp = sys.maxsize
+#     print("Mode: {}".format(mode))
+#     for epoch in range(1, N_EPOCHS + 1):
+#         since = time.time()
+#         # Train
+#         trn_loss, trn_err = train(model, train_loader, optimizer, criterion, epoch)
+#         print(
+#             "Epoch {:d}\nTrain - Loss: {:.4f}, Acc: {:.4f}".format(
+#                 epoch, trn_loss, 1 - trn_err
+#             )
+#         )
+
+#         time_elapsed = time.time() - since
+#         print(
+#             "Train Time {:.0f}m {:.0f}s".format(time_elapsed // 60, time_elapsed % 60)
+#         )
+
+#         # Test
+#         val_loss, val_err = test(model, val_loader, criterion, epoch)
+#         print("Val - Loss: {:.4f} | Acc: {:.4f}".format(val_loss, 1 - val_err))
+#         time_elapsed = time.time() - since
+#         print(
+#             "Total Time {:.0f}m {:.0f}s\n".format(time_elapsed // 60, time_elapsed % 60)
+#         )
+
+#         if val_tmp < val_loss:  # early stopping
+#             break
+#         else:
+#             val_tmp = val_loss
+#         # save results
+#         save_result(trn_loss, trn_err, val_loss, val_err, epoch)
+
+#         ### Adjust Lr ###
+#         train_utils.adjust_learning_rate(
+#             LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS
+#         )
+#     ### Checkpoint ###
+#     # train_utils.save_weights(model, epoch, val_loss, val_err, mode=mode)
+
+#     # Save model weights
+    # weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
+    # torch.save({
+    #     'epoch': epoch,
+    #     'startEpoch': epoch,
+    #     'model_state_dict': model.state_dict(),
+    #     'optimizer_state_dict': optimizer.state_dict(),
+    #     'val_loss': val_loss,
+    #     'val_err': val_err,
+    #     'loss': val_loss,
+    #     'error': val_err,
+    # }, weights_filename)
+    # print(f"Model weights saved to {weights_filename}")
+
 if __name__ == "__main__":
-    # maximum value that can be held by a variable
+    # Initialize metric tracking
+    iou_scores = []
+    precisions = []
+    recalls = []
+    entropies = []
+
+    # Training loop
     val_tmp = sys.maxsize
     print("Mode: {}".format(mode))
     for epoch in range(1, N_EPOCHS + 1):
         since = time.time()
+        
         # Train
         trn_loss, trn_err = train(model, train_loader, optimizer, criterion, epoch)
         print(
@@ -209,35 +308,69 @@ if __name__ == "__main__":
                 epoch, trn_loss, 1 - trn_err
             )
         )
-
+        
         time_elapsed = time.time() - since
-        print(
-            "Train Time {:.0f}m {:.0f}s".format(time_elapsed // 60, time_elapsed % 60)
-        )
+        print("Train Time {:.0f}m {:.0f}s".format(time_elapsed // 60, time_elapsed % 60))
 
         # Test
         val_loss, val_err = test(model, val_loader, criterion, epoch)
         print("Val - Loss: {:.4f} | Acc: {:.4f}".format(val_loss, 1 - val_err))
+        
         time_elapsed = time.time() - since
-        print(
-            "Total Time {:.0f}m {:.0f}s\n".format(time_elapsed // 60, time_elapsed % 60)
-        )
+        print("Total Time {:.0f}m {:.0f}s\n".format(time_elapsed // 60, time_elapsed % 60))
 
         if val_tmp < val_loss:  # early stopping
             break
         else:
             val_tmp = val_loss
-        # save results
         save_result(trn_loss, trn_err, val_loss, val_err, epoch)
 
-        ### Adjust Lr ###
-        train_utils.adjust_learning_rate(
-            LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS
-        )
-    ### Checkpoint ###
-    # train_utils.save_weights(model, epoch, val_loss, val_err, mode=mode)
+        # Calculate metrics for validation
+        with torch.no_grad():
+            iou_epoch = []
+            precision_epoch = []
+            recall_epoch = []
+            for inputs, targets in val_loader:
+                inputs, targets = inputs.cuda(), targets.cuda()
+                outputs = model(inputs)
+                
+                # Obtain predictions
+                preds = torch.argmax(outputs[0], dim=1) if mode != "base" else torch.argmax(outputs, dim=1)
+                preds_np = preds.cpu().numpy()
+                targets_np = targets.cpu().numpy()
 
-    # Save model weights
+                # Compute IoU, precision, and recall
+                iou_epoch.append(compute_iou(preds_np, targets_np))
+                precision, recall = compute_precision_recall(preds_np, targets_np)
+                precision_epoch.append(precision)
+                recall_epoch.append(recall)
+
+                # Compute entropy map (for aleatoric/combined mode)
+                if mode in ["aleatoric", "combined"]:
+                    prob_map = torch.nn.functional.softmax(outputs[0], dim=1)
+                    entropy_map = compute_entropy_map(prob_map)
+                    entropies.append(entropy_map.mean())
+
+            iou_scores.append(np.mean(iou_epoch))
+            precisions.append(np.mean(precision_epoch))
+            recalls.append(np.mean(recall_epoch))
+
+            print(f"IoU: {iou_scores[-1]:.4f}, Precision: {precisions[-1]:.4f}, Recall: {recalls[-1]:.4f}")
+
+        # Adjust learning rate
+        train_utils.adjust_learning_rate(LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS)
+
+    # Save final model weights
+    # weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
+    # torch.save({
+    #     'epoch': epoch,
+    #     'model_state_dict': model.state_dict(),
+    #     'optimizer_state_dict': optimizer.state_dict(),
+    #     'val_loss': val_loss,
+    #     'val_err': val_err,
+    # }, weights_filename)
+    # print(f"Model weights saved to {weights_filename}")
+
     weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
     torch.save({
         'epoch': epoch,
@@ -250,3 +383,25 @@ if __name__ == "__main__":
         'error': val_err,
     }, weights_filename)
     print(f"Model weights saved to {weights_filename}")
+
+    # Plot metrics after training
+    plt.figure(figsize=(12, 8))
+    plt.plot(range(1, len(iou_scores) + 1), iou_scores, label="IoU", marker="o")
+    plt.plot(range(1, len(precisions) + 1), precisions, label="Precision", marker="o")
+    plt.plot(range(1, len(recalls) + 1), recalls, label="Recall", marker="o")
+    plt.xlabel("Epoch")
+    plt.ylabel("Score")
+    plt.title("IoU, Precision, and Recall over Epochs")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Plot entropy map if applicable
+    if mode in ["aleatoric", "combined"]:
+        plt.figure()
+        plt.hist(entropies, bins=30, alpha=0.7, label="Entropy")
+        plt.xlabel("Entropy")
+        plt.ylabel("Frequency")
+        plt.title("Entropy Distribution")
+        plt.legend()
+        plt.show()
