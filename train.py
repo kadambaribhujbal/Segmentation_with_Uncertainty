@@ -373,14 +373,17 @@ if __name__ == "__main__":
 
     weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
     torch.save({
-        'epoch': epoch,
+        # 'epoch': epoch,
         'startEpoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'val_loss': val_loss,
         'val_err': val_err,
-        'loss': val_loss,
-        'error': val_err,
+        'train_loss': trn_loss,
+        'train_err': trn_err,
+        # 'loss': val_loss,
+        # 'error': val_err,
+
     }, weights_filename)
     print(f"Model weights saved to {weights_filename}")
 
