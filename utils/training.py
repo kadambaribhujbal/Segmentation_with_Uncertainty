@@ -335,5 +335,5 @@ def save_result(
     save_ = sorted(save.items(), key=(lambda x: x[0]))
     dataframe = pd.DataFrame(save_)
     dataframe.to_csv(
-        "./.results/{}-lr-{}-epoch-{}.csv".format(mode, lr, epoch), encoding="utf-8"
+        "/content/results/{}-lr-{}-epoch-{}.csv".format(mode, lr, epoch), encoding="utf-8"
     )
