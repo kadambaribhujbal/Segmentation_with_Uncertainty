@@ -1,7 +1,7 @@
 def get_hyperparams():
     hyperprams = {
         "dataset_path": "",
-        "batch_size": 4,
+        "batch_size": 1,
         "image_shape": [360, 480],
         "num_classes": 12,
         # "learning_rate": 1e-4,
