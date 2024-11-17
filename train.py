@@ -319,10 +319,10 @@ if __name__ == "__main__":
         time_elapsed = time.time() - since
         print("Total Time {:.0f}m {:.0f}s\n".format(time_elapsed // 60, time_elapsed % 60))
 
-        if val_tmp < val_loss:  # early stopping
-            break
-        else:
-            val_tmp = val_loss
+        # if val_tmp < val_loss:  # early stopping
+        #     break
+        # else:
+        #     val_tmp = val_loss
         save_result(trn_loss, trn_err, val_loss, val_err, epoch)
 
         # Calculate metrics for validation
