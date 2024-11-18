@@ -89,16 +89,16 @@ DECAY_EVERY_N_EPOCHS = hyper["decay_per_n_epoch"]
 N_EPOCHS = hyper["n_epoch"]
 
 # Load the most recent weight file from WEIGHTS_PATH
-# weights_files = list(WEIGHTS_PATH.glob("*.pth"))
-# if weights_files:
-#     latest_weight_file = max(weights_files, key=lambda f: f.stat().st_mtime)
-#     model_path = latest_weight_file
-#     print(f"Loading weights from: {model_path}")
-# else:
-#     raise FileNotFoundError("No weight files found in the specified directory.")
+weights_files = list(WEIGHTS_PATH.glob("*.pth"))
+if weights_files:
+    latest_weight_file = max(weights_files, key=lambda f: f.stat().st_mtime)
+    model_path = latest_weight_file
+    print(f"Loading weights from: {model_path}")
+else:
+    raise FileNotFoundError("No weight files found in the specified directory.")
 
 # load combined model
-model_path = "./trained_weights/model_epoch_10_val_loss_batch1_0.5dp_lr1e-4_lrdecay0.995_combined.pth"
+# model_path = "./trained_weights/model_epoch_10_val_loss_batch1_0.5dp_lr1e-4_lrdecay0.995_combined.pth"
 model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
 load_weights(model, model_path)
 
