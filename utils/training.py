@@ -347,39 +347,99 @@ def view_sample_predictions(model, loader, n):
         img_utils.view_annotated(pred[i])
 
 
-def view_sample_predictions_with_uncertainty(
-    model, inputs, targets, n, test_trials=2
-):
-    # Dropout for MC Sampling
-    model.train()
-    # data = Variable(inputs.cuda(), volatile=True).view(1, 3, img_shape[0], img_shape[1])
-    with torch.no_grad():
-        data = inputs.cuda().view(1, 3, img_shape[0], img_shape[1])
-    label = targets.cuda()
-    # label = Variable(targets.cuda())
-    output, log_var = model(data)
-    shape = (1, 1, num_classes, img_shape[0], img_shape[1])
-    outputs = model(data)[0].view(shape).data
-    for i in range(test_trials - 1):
-        output = model(data)[0].view(shape).data
-        outputs = torch.cat([outputs, output], dim=0)
-    predictive_mean = outputs.mean(dim=0)  # mean
-    pred = get_predictions(predictive_mean)[0]
-    base_path = "./combined/"
-    # base_path = "/content/combined/"
-    # uncertainty
-    epistemic = get_epistemic(outputs, predictive_mean, test_trials)  # check shape
-    aleatoric = log_var[0]
+# def view_sample_predictions_with_uncertainty(
+#     model, inputs, targets, n, test_trials=2
+# ):
+#     # Dropout for MC Sampling
+#     model.train()
+#     # data = Variable(inputs.cuda(), volatile=True).view(1, 3, img_shape[0], img_shape[1])
+#     with torch.no_grad():
+#         data = inputs.cuda().view(1, 3, img_shape[0], img_shape[1])
+#     label = targets.cuda()
+#     # label = Variable(targets.cuda())
+#     output, log_var = model(data)
+#     shape = (1, 1, num_classes, img_shape[0], img_shape[1])
+#     outputs = model(data)[0].view(shape).data
+#     for i in range(test_trials - 1):
+#         output = model(data)[0].view(shape).data
+#         outputs = torch.cat([outputs, output], dim=0)
+#     predictive_mean = outputs.mean(dim=0)  # mean
+#     pred = get_predictions(predictive_mean)[0]
+#     base_path = "./combined/"
+#     # base_path = "/content/combined/"
+#     # uncertainty
+#     epistemic = get_epistemic(outputs, predictive_mean, test_trials)  # check shape
+#     aleatoric = log_var[0]
 
-    img_utils.view_image(inputs, path=base_path, n=n, mode="input")
-    img_utils.view_annotated(targets, path=base_path, n=n, mode="target")
-    img_utils.view_annotated(pred, path=base_path, n=n, mode="pred")
+#     img_utils.view_image(inputs, path=base_path, n=n, mode="input")
+#     img_utils.view_annotated(targets, path=base_path, n=n, mode="target")
+#     img_utils.view_annotated(pred, path=base_path, n=n, mode="pred")
+#     img_utils.view_image_with_uncertainty(
+#         inputs, epistemic, path=base_path, n=n, mode="epistemic"
+#     )
+#     img_utils.view_image_with_uncertainty(
+#         inputs, aleatoric, path=base_path, n=n, mode="aleatoric"
+#     )
+
+
+def view_sample_predictions_with_uncertainty(
+    model, inputs, targets, sample_id, test_trials=2
+):
+    """
+    Visualizes predictions with uncertainty (epistemic and aleatoric) for a given model and input.
+
+    Args:
+        model (torch.nn.Module): The trained model.
+        inputs (torch.Tensor): Input image tensor.
+        targets (torch.Tensor): Ground truth labels.
+        sample_id (int): Unique identifier for the sample being visualized.
+        test_trials (int): Number of Monte Carlo trials for uncertainty estimation.
+
+    Returns:
+        None
+    """
+    # Set model to training mode for Monte Carlo (MC) Dropout
+    model.train()
+    
+    # Prepare input tensor and move to the appropriate device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    inputs = inputs.to(device).unsqueeze(0)  # Add batch dimension
+    targets = targets.to(device)
+    
+    # Run initial forward pass
+    with torch.no_grad():
+        output, log_var = model(inputs)  # `log_var` represents aleatoric uncertainty
+    
+    # Collect predictions from multiple MC trials
+    outputs = []
+    for _ in range(test_trials):
+        trial_output, _ = model(inputs)
+        outputs.append(trial_output.unsqueeze(0))
+    
+    # Stack outputs and compute predictive mean
+    outputs = torch.cat(outputs, dim=0)  # Shape: [test_trials, 1, num_classes, H, W]
+    predictive_mean = outputs.mean(dim=0).squeeze(0)  # Shape: [num_classes, H, W]
+    
+    # Generate final prediction and uncertainties
+    predictions = get_predictions(predictive_mean)
+    epistemic_uncertainty = get_epistemic(outputs, predictive_mean, test_trials)
+    aleatoric_uncertainty = log_var.squeeze(0).cpu()  # Shape: [H, W]
+    
+    # Define base path for saving visualizations
+    base_path = "./combined/"
+    os.makedirs(base_path, exist_ok=True)
+    
+    # Visualization
+    img_utils.view_image(inputs[0].cpu(), path=base_path, n=sample_id, mode="input")
+    img_utils.view_annotated(targets.cpu(), path=base_path, n=sample_id, mode="target")
+    img_utils.view_annotated(predictions[0], path=base_path, n=sample_id, mode="pred")
     img_utils.view_image_with_uncertainty(
-        inputs, epistemic, path=base_path, n=n, mode="epistemic"
+        inputs[0].cpu(), epistemic_uncertainty.cpu(), path=base_path, n=sample_id, mode="epistemic"
     )
     img_utils.view_image_with_uncertainty(
-        inputs, aleatoric, path=base_path, n=n, mode="aleatoric"
+        inputs[0].cpu(), aleatoric_uncertainty, path=base_path, n=sample_id, mode="aleatoric"
     )
+
 
 
 def save_result(
