@@ -110,5 +110,5 @@ if __name__ == "__main__":
         print("{} - th".format(i))
         train_utils.view_sample_predictions_with_uncertainty(model, inputs, targets, i)
         i += 1
-        if i > 2:
+        if i > 100:
             break

@@ -385,7 +385,7 @@ def view_sample_predictions(model, loader, n):
 
 
 def view_sample_predictions_with_uncertainty(
-    model, inputs, targets, sample_id, test_trials=2
+    model, inputs, targets, sample_id, test_trials=100
 ):
     """
     Visualizes predictions with uncertainty (epistemic and aleatoric) for a given model and input.

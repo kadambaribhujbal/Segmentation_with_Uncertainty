@@ -113,14 +113,14 @@ def view_image_with_uncertainty(tensor1, tensor2, path=SAVE_IMGS, n=0, mode="epi
     inp = np.clip(inp, 0, 1)
     tensor2 = tensor2.to(torch.device("cpu")).detach().numpy()[0]
 
+    path = "/content/combined/"
+
+    save_path = path + "{}-{}.png".format(n, mode)
+
     plt.imshow(inp)
     plt.pcolor(tensor2, alpha=0.5, cmap='viridis')  # Uncertainty overlay
     plt.colorbar(label='Uncertainty')
     plt.title(mode)
-    plt.show()
-
-    path = "/content/combined/"
-
-    save_path = path + "{}-{}.png".format(n, mode)
     plt.savefig(save_path, bbox_inches="tight")
+    plt.show()
     plt.close()
