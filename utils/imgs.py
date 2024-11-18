@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import torch
 from pathlib import Path
 
+# Define label colors
 Sky = [128, 128, 128]
 Building = [128, 0, 0]
 Pole = [192, 192, 128]
@@ -36,94 +37,83 @@ label_colours = np.array(
     ]
 )
 
+# Save directory for images
+SAVE_IMGS = Path("/content/combined/")
+SAVE_IMGS.mkdir(exist_ok=True)
 
-def view_annotated(tensor, plot=True, n=0, path=None, mode="target"):
+
+def view_annotated(tensor, plot=True, n=0, path=SAVE_IMGS, mode="target"):
+    """
+    Visualize and optionally save the annotated image based on segmentation labels.
+    """
     temp = tensor.numpy()
-    r = temp.copy()
-    g = temp.copy()
-    b = temp.copy()
-    for l in range(0, 11):
+    r, g, b = temp.copy(), temp.copy(), temp.copy()
+    
+    for l in range(0, len(label_colours)):
         r[temp == l] = label_colours[l, 0]
         g[temp == l] = label_colours[l, 1]
         b[temp == l] = label_colours[l, 2]
 
     rgb = np.zeros((temp.shape[0], temp.shape[1], 3))
-    rgb[:, :, 0] = r / 255.0  # [:,:,0]
-    rgb[:, :, 1] = g / 255.0  # [:,:,1]
-    rgb[:, :, 2] = b / 255.0  # [:,:,2]
+    rgb[:, :, 0] = r / 255.0
+    rgb[:, :, 1] = g / 255.0
+    rgb[:, :, 2] = b / 255.0
 
-    save_imgs = "/content/combined/"
-    path = save_imgs + "{}-{}.png".format(n, mode)
-
-    # path = path + "{}-{}.png".format(n, mode)
+    save_path = path / f"{n}-{mode}.png"
 
     if plot:
         plt.imshow(rgb)
         plt.title(mode)
         plt.show()
-        if path:
-            plt.savefig(path)
-            plt.close()
+        plt.savefig(save_path, bbox_inches="tight")
+        plt.close()
     else:
         return rgb
 
 
 def decode_image(tensor):
+    """
+    Decode an image tensor into a visualizable format.
+    """
     inp = tensor.numpy().transpose((1, 2, 0))
     mean = np.array(DSET_MEAN)
     std = np.array(DSET_STD)
     inp = std * inp + mean
     inp = np.clip(inp, 0, 1)  # Clip to valid range
-    print("Decoded Image Tensor Stats: Min =", inp.min(), "Max =", inp.max(), "Mean =", inp.mean())
-    print("Target Tensor Stats: Min =", tensor.min(), "Max =", tensor.max(), "Mean =", tensor.mean())
-
     return inp
 
 
-def view_image(tensor, plot=True, path=None, n=0, mode="pred"):
+def view_image(tensor, plot=True, path=SAVE_IMGS, n=0, mode="pred"):
+    """
+    Visualize and optionally save an image.
+    """
     inp = decode_image(tensor)
-    inp = np.clip(inp, 0, 1)
-
-    SAVE_IMGS = Path("/content/combined/")
-    SAVE_IMGS.mkdir(exist_ok=True)
-
-    save_imgs = "/content/combined/"
-    path = save_imgs + "{}-{}.png".format(n, mode)
-
-
-    # path = path + "{}-{}.png".format(n, mode)
+    save_path = path / f"{n}-{mode}.png"
 
     if plot:
         plt.imshow(inp)
         plt.title(mode)
         plt.show()
-        if path:
-            print(f"Saving to: {path}")
-            plt.savefig(path, bbox_inches="tight")  # Ensure the plot is fully captured
-            # plt.savefig(path)
-            plt.close()
+        plt.savefig(save_path, bbox_inches="tight")  # Save plot
+        plt.close()
     else:
         return inp
 
 
-def view_image_with_uncertainty(tensor1, tensor2, path=None, n=0, mode="epistemic"):
+def view_image_with_uncertainty(tensor1, tensor2, path=SAVE_IMGS, n=0, mode="epistemic"):
+    """
+    Visualize and optionally save an image with uncertainty overlay.
+    """
     inp = decode_image(tensor1)
     inp = np.clip(inp, 0, 1)
-    tensor2 = tensor2.to(torch.device("cpu")).detach()
-    tensor2 = tensor2.numpy()[0]
+    tensor2 = tensor2.to(torch.device("cpu")).detach().numpy()[0]
+
     plt.imshow(inp)
-    plt.pcolor(tensor2)
-    plt.colorbar()
+    plt.pcolor(tensor2, alpha=0.5, cmap='viridis')  # Uncertainty overlay
+    plt.colorbar(label='Uncertainty')
     plt.title(mode)
     plt.show()
 
-    SAVE_IMGS = Path("/content/combined/")
-    SAVE_IMGS.mkdir(exist_ok=True)
-
-    save_imgs = "/content/combined/"
-    path = save_imgs + "{}-{}.png".format(n, mode)
-
-    # path = path + "{}-{}.png".format(n, mode)
-    if path:
-        plt.savefig(path)
-        plt.close()
+    save_path = path / f"{n}-{mode}.png"
+    plt.savefig(save_path, bbox_inches="tight")
+    plt.close()
