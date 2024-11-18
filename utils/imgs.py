@@ -66,8 +66,9 @@ def view_annotated(tensor, plot=True, n=0, path=SAVE_IMGS, mode="target"):
     if plot:
         plt.imshow(rgb)
         plt.title(mode)
-        plt.show()
         plt.savefig(save_path, bbox_inches="tight")
+        plt.show()
+        # plt.savefig(save_path, bbox_inches="tight")
         plt.close()
     else:
         return rgb
@@ -96,8 +97,9 @@ def view_image(tensor, plot=True, path=SAVE_IMGS, n=0, mode="pred"):
     if plot:
         plt.imshow(inp)
         plt.title(mode)
-        plt.show()
         plt.savefig(save_path, bbox_inches="tight")  # Save plot
+        plt.show()
+        # plt.savefig(save_path, bbox_inches="tight")  # Save plot
         plt.close()
     else:
         return inp

@@ -397,7 +397,9 @@ if __name__ == "__main__":
     plt.title("IoU, Precision, and Recall over Epochs")
     plt.legend()
     plt.grid()
+    plt.savefig("/content/combined/test_iou", bbox_inches="tight")  # Save plot
     plt.show()
+    time.sleep(5) 
 
     # Plot entropy map if applicable
     if mode in ["aleatoric", "combined"]:
@@ -407,4 +409,6 @@ if __name__ == "__main__":
         plt.ylabel("Frequency")
         plt.title("Entropy Distribution")
         plt.legend()
+        plt.savefig("/content/combined/test_entropy", bbox_inches="tight")  # Save plot
         plt.show()
+        time.sleep(5) 
