@@ -420,8 +420,11 @@ def view_sample_predictions_with_uncertainty(
     outputs = torch.cat(outputs, dim=0)  # Shape: [test_trials, 1, num_classes, H, W]
     predictive_mean = outputs.mean(dim=0).squeeze(0)  # Shape: [num_classes, H, W]
     
+    # Add batch dimension for compatibility with `get_predictions`
+    predictive_mean = predictive_mean.unsqueeze(0)  # Shape: [1, num_classes, H, W]
+    
     # Generate final prediction and uncertainties
-    predictions = get_predictions(predictive_mean)
+    predictions = get_predictions(predictive_mean)  # Now `predictive_mean` is 4D
     epistemic_uncertainty = get_epistemic(outputs, predictive_mean, test_trials)
     aleatoric_uncertainty = log_var.squeeze(0).cpu()  # Shape: [H, W]
     
@@ -439,6 +442,7 @@ def view_sample_predictions_with_uncertainty(
     img_utils.view_image_with_uncertainty(
         inputs[0].cpu(), aleatoric_uncertainty, path=base_path, n=sample_id, mode="aleatoric"
     )
+
 
 
 
