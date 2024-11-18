@@ -72,6 +72,10 @@ def decode_image(tensor):
     mean = np.array(DSET_MEAN)
     std = np.array(DSET_STD)
     inp = std * inp + mean
+    inp = np.clip(inp, 0, 1)  # Clip to valid range
+    print("Decoded Image Tensor Stats: Min =", inp.min(), "Max =", inp.max(), "Mean =", inp.mean())
+    print("Target Tensor Stats: Min =", tensor.min(), "Max =", tensor.max(), "Mean =", tensor.mean())
+
     return inp
 
 
@@ -90,7 +94,9 @@ def view_image(tensor, plot=True, path=None, n=0, mode="pred"):
         plt.title(mode)
         plt.show()
         if path:
-            plt.savefig(path)
+            print(f"Saving to: {path}")
+            plt.savefig(path, bbox_inches="tight")  # Ensure the plot is fully captured
+            # plt.savefig(path)
             plt.close()
     else:
         return inp

@@ -111,6 +111,50 @@ def custom_cirterion(y_pred, y_true):
     loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
     return loss.sum()
 
+# def custom_cirterion_aleatoric_classification(y_pred, y_true, T=10):
+#     """
+#     Aleatoric classification loss function with stochastic approximation.
+#     Args:
+#         y_pred (tuple): (logits, log_variance) from the model.
+#         y_true (Tensor): Ground truth labels.
+#         T (int): Number of Monte Carlo samples for stochastic approximation.
+#     Returns:
+#         Tensor: The computed aleatoric loss.
+#     """
+#     # Unpack predictions
+#     logits, log_var = y_pred
+#     batch_size, num_classes, height, width = logits.size()
+
+#     # Reshape target to match predictions
+#     y_true = y_true.view(batch_size, -1)  # Flatten ground truth
+#     logits = logits.view(batch_size, num_classes, -1)  # Flatten logits
+#     log_var = log_var.view(batch_size, num_classes, -1)  # Flatten log_var
+
+#     # Gaussian sampling for stochastic integration
+#     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+#     # log_var to std dev. std_dev = exp(log_var/2)
+#     # sample from the logits
+#     perturbed_logits = logits.unsqueeze(0) + torch.exp(0.5 * log_var).unsqueeze(0) * epsilon
+
+#     # Compute the softmax for perturbed logits
+#     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+
+#     # Get the log-likelihood for true class probabilities
+#     target_one_hot = torch.zeros_like(softmax_outputs)
+#     target_one_hot.scatter_(2, y_true.unsqueeze(0).unsqueeze(2).expand(T, -1, -1, -1), 1)
+#     log_likelihoods = torch.log((softmax_outputs * target_one_hot).sum(dim=2) + 1e-8)  # Avoid log(0)
+
+#     # Negative log-likelihood loss (averaged over T samples)
+#     nll_loss = -log_likelihoods.mean(dim=0)
+
+#     # Regularization from log variance
+#     reg_loss = 0.5 * log_var.sum(dim=2).mean()
+
+#     # Total loss
+#     total_loss = nll_loss.sum() + reg_loss
+#     return total_loss
+
+
 
 # hyperparameters
 LR = hyper["learning_rate"]

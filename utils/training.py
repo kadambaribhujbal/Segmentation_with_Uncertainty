@@ -348,7 +348,7 @@ def view_sample_predictions(model, loader, n):
 
 
 def view_sample_predictions_with_uncertainty(
-    model, inputs, targets, n, test_trials=100
+    model, inputs, targets, n, test_trials=2
 ):
     # Dropout for MC Sampling
     model.train()
