@@ -59,7 +59,7 @@ def view_annotated(tensor, plot=True, n=0, path=SAVE_IMGS, mode="target"):
     rgb[:, :, 1] = g / 255.0
     rgb[:, :, 2] = b / 255.0
 
-    path=SAVE_IMGS
+    path = "/content/combined/"
 
     save_path = path + "{}-{}.png".format(n, mode)
 
@@ -89,7 +89,7 @@ def view_image(tensor, plot=True, path=SAVE_IMGS, n=0, mode="pred"):
     """
     Visualize and optionally save an image.
     """
-    path=SAVE_IMGS
+    path = "/content/combined/"
     inp = decode_image(tensor)
     save_path = path + "{}-{}.png".format(n, mode)
 
@@ -117,7 +117,7 @@ def view_image_with_uncertainty(tensor1, tensor2, path=SAVE_IMGS, n=0, mode="epi
     plt.title(mode)
     plt.show()
 
-    path=SAVE_IMGS
+    path = "/content/combined/"
 
     save_path = path + "{}-{}.png".format(n, mode)
     plt.savefig(save_path, bbox_inches="tight")
