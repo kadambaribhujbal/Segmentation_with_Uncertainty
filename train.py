@@ -377,12 +377,12 @@ if __name__ == "__main__":
         'startEpoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
-        'val_loss': val_loss,
-        'val_err': val_err,
+        # 'val_loss': val_loss,
+        # 'val_err': val_err,
         'train_loss': trn_loss,
         'train_err': trn_err,
-        # 'loss': val_loss,
-        # 'error': val_err,
+        'loss': val_loss,
+        'error': val_err,
 
     }, weights_filename)
     print(f"Model weights saved to {weights_filename}")

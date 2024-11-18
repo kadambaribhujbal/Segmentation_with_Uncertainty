@@ -39,6 +39,8 @@ def save_weights(model, epoch, loss, err, mode):
             "startEpoch": epoch,
             "loss": loss,
             "error": err,
+            # "val_loss": loss,
+            # "val_err": err,
             "state_dict": model.state_dict(),
         },
         weights_fpath,
@@ -452,8 +454,8 @@ def save_result(
     save = hyper
     save["train_loss"] = train_loss
     save["train_err"] = train_err
-    save["val_loss"] = val_loss
-    save["val_error"] = val_error
+    save["loss"] = val_loss
+    save["error"] = val_error
 
     save_ = sorted(save.items(), key=(lambda x: x[0]))
     dataframe = pd.DataFrame(save_)
