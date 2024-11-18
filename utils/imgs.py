@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+from pathlib import Path
 
 Sky = [128, 128, 128]
 Building = [128, 0, 0]
@@ -83,6 +84,9 @@ def view_image(tensor, plot=True, path=None, n=0, mode="pred"):
     inp = decode_image(tensor)
     inp = np.clip(inp, 0, 1)
 
+    SAVE_IMGS = Path("/content/combined/")
+    SAVE_IMGS.mkdir(exist_ok=True)
+
     save_imgs = "/content/combined/"
     path = save_imgs + "{}-{}.png".format(n, mode)
 
@@ -112,6 +116,9 @@ def view_image_with_uncertainty(tensor1, tensor2, path=None, n=0, mode="epistemi
     plt.colorbar()
     plt.title(mode)
     plt.show()
+
+    SAVE_IMGS = Path("/content/combined/")
+    SAVE_IMGS.mkdir(exist_ok=True)
 
     save_imgs = "/content/combined/"
     path = save_imgs + "{}-{}.png".format(n, mode)
