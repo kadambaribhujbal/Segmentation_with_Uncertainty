@@ -113,7 +113,7 @@ _criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cud
 
 def custom_cirterion(y_pred, y_true):
   
-    T=50 # number of mc samples for stochastic approximation
+    T=10 # number of mc samples for stochastic approximation
 
     logits, log_var = y_pred
     batch_size, num_classes, height, width = logits.size()
@@ -130,12 +130,14 @@ def custom_cirterion(y_pred, y_true):
     # sample random number from normal dist
     epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
     # std_dev = exp(log_var/2) [convert log_var to std dev]
-    std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
+    # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
+    
     # sample from the logits
     # print("logits shape:", logits.unsqueeze(0).shape)
     # print("std_dev shape:", std_dev.shape)
     # print("epsilon shape:", epsilon.shape)
-    perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
+    # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
+    perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
     prob_ave = torch.mean(softmax_outputs, 0)
