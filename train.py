@@ -102,64 +102,53 @@ utils.imgs.view_annotated(targets[0])
 _criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cuda()
 
 
+# def custom_cirterion(y_pred, y_true):
+#     """Aleatoric loss function
+#     See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
+#     """
+#     output, log_var = y_pred
+#     log_var = log_var[0]
+#     loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
+#     return loss.sum()
+
 def custom_cirterion(y_pred, y_true):
-    """Aleatoric loss function
-    See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
-    """
-    output, log_var = y_pred
-    log_var = log_var[0]
-    loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
-    return loss.sum()
+  
+    T=10 # number of mc samples for stochastic approximation
 
-# def custom_cirterion_aleatoric_classification(y_pred, y_true, T=10):
-#     """
-#     Aleatoric classification loss function with stochastic approximation.
-#     Args:
-#         y_pred (tuple): (logits, log_variance) from the model.
-#         y_true (Tensor): Ground truth labels.
-#         T (int): Number of Monte Carlo samples for stochastic approximation.
-#     Returns:
-#         Tensor: The computed aleatoric loss.
-#     """
-#     # Unpack predictions
-#     logits, log_var = y_pred
-#     batch_size, num_classes, height, width = logits.size()
+    logits, log_var = y_pred
+    batch_size, num_classes, height, width = logits.size()
 
-#     # Reshape target to match predictions
-#     y_true = y_true.view(batch_size, -1)  # Flatten ground truth
-#     logits = logits.view(batch_size, num_classes, -1)  # Flatten logits
-#     log_var = log_var.view(batch_size, num_classes, -1)  # Flatten log_var
+    # reshape to match predictions
+    y_true = y_true.view(batch_size, -1)  
+    logits = logits.view(batch_size, num_classes, -1)  
+    log_var = log_var.view(batch_size, num_classes, -1) 
 
-#     # Gaussian sampling for stochastic integration
-#     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
-#     # log_var to std dev. std_dev = exp(log_var/2)
-#     # sample from the logits
-#     perturbed_logits = logits.unsqueeze(0) + torch.exp(0.5 * log_var).unsqueeze(0) * epsilon
+    # equation 12 in the paper 
+    epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+    # std_dev = exp(log_var/2) [convert log_var to std dev]
+    # sample from the logits
+    perturbed_logits = logits.unsqueeze(0) + torch.exp(0.5 * log_var).unsqueeze(0) * epsilon
+    softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
-#     # Compute the softmax for perturbed logits
-#     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+    # log-likelihood
+    target_one_hot_encoding = torch.zeros_like(softmax_outputs)
+    target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2).expand(T, -1, -1, -1), 1)
+    # avoid log(0) by adding 1e-8
+    log_likelihoods = torch.log((softmax_outputs * target_one_hot_encoding).sum(dim=2) + 1e-8) 
+    # -ve log-likelihood loss (avg over T samples)
+    nll_loss = -log_likelihoods.mean(dim=0)
+    reg_loss = 0.5 * log_var.sum(dim=2).mean()
+    # total
+    total_loss = nll_loss.sum() + reg_loss
+    return total_loss
 
-#     # Get the log-likelihood for true class probabilities
-#     target_one_hot = torch.zeros_like(softmax_outputs)
-#     target_one_hot.scatter_(2, y_true.unsqueeze(0).unsqueeze(2).expand(T, -1, -1, -1), 1)
-#     log_likelihoods = torch.log((softmax_outputs * target_one_hot).sum(dim=2) + 1e-8)  # Avoid log(0)
-
-#     # Negative log-likelihood loss (averaged over T samples)
-#     nll_loss = -log_likelihoods.mean(dim=0)
-
-#     # Regularization from log variance
-#     reg_loss = 0.5 * log_var.sum(dim=2).mean()
-
-#     # Total loss
-#     total_loss = nll_loss.sum() + reg_loss
-#     return total_loss
-
-# IoU Calculation Function
-def compute_iou(pred, target, n_classes=12):
-    """Compute IoU for each class and mean IoU."""
+# iou
+def iou_calculation(pred, target, n_classes=12):
     pred = pred.flatten()
     target = target.flatten()
     ious = []
+
+
     for cls in range(n_classes):
         pred_cls = pred == cls
         target_cls = target == cls
@@ -167,11 +156,12 @@ def compute_iou(pred, target, n_classes=12):
         union = (pred_cls | target_cls).sum()
         if union > 0:
             ious.append(intersection / union)
+
     return np.mean(ious)
 
-# Precision and Recall Calculation Function
-def compute_precision_recall(pred, target, n_classes=12):
-    """Compute precision and recall for each class and mean values."""
+# precision recall
+def precision_recall(pred, target, n_classes=12):
+
     precision = []
     recall = []
     for cls in range(n_classes):
@@ -186,9 +176,8 @@ def compute_precision_recall(pred, target, n_classes=12):
         recall.append(rec)
     return np.mean(precision), np.mean(recall)
 
-# Entropy Map Calculation Function
+# entropy
 def compute_entropy_map(prob_map):
-    """Compute entropy map from probability map."""
     prob_map = prob_map.cpu().numpy()
     entropy_map = -np.sum(prob_map * np.log(prob_map + 1e-12), axis=0)
     return entropy_map
@@ -325,7 +314,6 @@ if __name__ == "__main__":
         #     val_tmp = val_loss
         save_result(trn_loss, trn_err, val_loss, val_err, epoch)
 
-        # Calculate metrics for validation
         with torch.no_grad():
             iou_epoch = []
             precision_epoch = []
@@ -339,14 +327,13 @@ if __name__ == "__main__":
                 preds_np = preds.cpu().numpy()
                 targets_np = targets.cpu().numpy()
 
-                # Compute IoU, precision, and recall
-                iou_epoch.append(compute_iou(preds_np, targets_np))
-                precision, recall = compute_precision_recall(preds_np, targets_np)
+                # iou, precision, recall
+                iou_epoch.append(iou_calculation(preds_np, targets_np))
+                precision, recall = precision_recall(preds_np, targets_np)
                 precision_epoch.append(precision)
                 recall_epoch.append(recall)
 
-                # Compute entropy map (for aleatoric/combined mode)
-                if mode in ["aleatoric", "combined"]:
+                if mode in ["aleatoric", "combined"]:       #entropy
                     prob_map = torch.nn.functional.softmax(outputs[0], dim=1)
                     entropy_map = compute_entropy_map(prob_map)
                     entropies.append(entropy_map.mean())
@@ -357,7 +344,6 @@ if __name__ == "__main__":
 
             print(f"IoU: {iou_scores[-1]:.4f}, Precision: {precisions[-1]:.4f}, Recall: {recalls[-1]:.4f}")
 
-        # Adjust learning rate
         train_utils.adjust_learning_rate(LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS)
 
     # Save final model weights
@@ -397,7 +383,7 @@ if __name__ == "__main__":
     plt.title("IoU, Precision, and Recall over Epochs")
     plt.legend()
     plt.grid()
-    plt.savefig("/content/combined/test_iou", bbox_inches="tight")  # Save plot
+    plt.savefig("/content/combined/test_iou", bbox_inches="tight") 
     plt.show()
     time.sleep(5) 
 
@@ -409,6 +395,18 @@ if __name__ == "__main__":
         plt.ylabel("Frequency")
         plt.title("Entropy Distribution")
         plt.legend()
-        plt.savefig("/content/combined/test_entropy", bbox_inches="tight")  # Save plot
+        plt.savefig("/content/combined/test_entropy", bbox_inches="tight") 
         plt.show()
         time.sleep(5) 
+
+    # Plot Precision vs Recall
+    plt.figure(figsize=(10, 6))
+    plt.plot(recalls, precisions, label="Precision vs Recall", marker="o", linestyle="-")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title("Precision vs Recall")
+    plt.legend()
+    plt.grid()
+    plt.savefig("/content/combined/precision_vs_recall", bbox_inches="tight") 
+    plt.show()
+    time.sleep(5)
