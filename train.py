@@ -113,7 +113,7 @@ _criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cud
 
 def custom_cirterion(y_pred, y_true):
   
-    T=10 # number of mc samples for stochastic approximation
+    T=20 # number of mc samples for stochastic approximation
 
     logits, log_var = y_pred
     batch_size, num_classes, height, width = logits.size()
