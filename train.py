@@ -144,20 +144,6 @@ def custom_cirterion(y_pred, y_true):
 
     total_loss = _criterion(torch.log(prob_ave), y_true)
     total_loss = total_loss.sum()
-
-    # # log-likelihood
-    # target_one_hot_encoding = torch.zeros_like(softmax_outputs)
-    # target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2), 1)
-    # # target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2).expand(T, -1, -1, -1), 1)
-    # # avoid log(0) by adding 1e-8
-    # # log_likelihoods = torch.log((softmax_outputs * target_one_hot_encoding).sum(dim=2) + 1e-8) 
-    # log_likelihoods = torch.log((softmax_outputs * target_one_hot_encoding).sum(dim=2) + 1e-5)
-    # # -ve log-likelihood loss (avg over T samples)
-    # nll_loss = -log_likelihoods.mean(dim=0)
-    # reg_loss = 0.5 * log_var.sum(dim=2).mean()
-    # # total
-    # # total_loss = nll_loss.sum() + reg_loss
-    # total_loss = nll_loss.sum()
     return total_loss
 
 # iou
@@ -239,61 +225,6 @@ elif mode == "combined":
     criterion = custom_cirterion
     test = train_utils.test_combined
     train = train_utils.train_aleatoric
-
-# if __name__ == "__main__":
-#     # maximum value that can be held by a variable
-#     val_tmp = sys.maxsize
-#     print("Mode: {}".format(mode))
-#     for epoch in range(1, N_EPOCHS + 1):
-#         since = time.time()
-#         # Train
-#         trn_loss, trn_err = train(model, train_loader, optimizer, criterion, epoch)
-#         print(
-#             "Epoch {:d}\nTrain - Loss: {:.4f}, Acc: {:.4f}".format(
-#                 epoch, trn_loss, 1 - trn_err
-#             )
-#         )
-
-#         time_elapsed = time.time() - since
-#         print(
-#             "Train Time {:.0f}m {:.0f}s".format(time_elapsed // 60, time_elapsed % 60)
-#         )
-
-#         # Test
-#         val_loss, val_err = test(model, val_loader, criterion, epoch)
-#         print("Val - Loss: {:.4f} | Acc: {:.4f}".format(val_loss, 1 - val_err))
-#         time_elapsed = time.time() - since
-#         print(
-#             "Total Time {:.0f}m {:.0f}s\n".format(time_elapsed // 60, time_elapsed % 60)
-#         )
-
-#         if val_tmp < val_loss:  # early stopping
-#             break
-#         else:
-#             val_tmp = val_loss
-#         # save results
-#         save_result(trn_loss, trn_err, val_loss, val_err, epoch)
-
-#         ### Adjust Lr ###
-#         train_utils.adjust_learning_rate(
-#             LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS
-#         )
-#     ### Checkpoint ###
-#     # train_utils.save_weights(model, epoch, val_loss, val_err, mode=mode)
-
-#     # Save model weights
-    # weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
-    # torch.save({
-    #     'epoch': epoch,
-    #     'startEpoch': epoch,
-    #     'model_state_dict': model.state_dict(),
-    #     'optimizer_state_dict': optimizer.state_dict(),
-    #     'val_loss': val_loss,
-    #     'val_err': val_err,
-    #     'loss': val_loss,
-    #     'error': val_err,
-    # }, weights_filename)
-    # print(f"Model weights saved to {weights_filename}")
 
 if __name__ == "__main__":
     # Initialize metric tracking
