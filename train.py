@@ -132,9 +132,9 @@ def custom_cirterion(y_pred, y_true):
     # std_dev = exp(log_var/2) [convert log_var to std dev]
     std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     # sample from the logits
-    print("logits shape:", logits.unsqueeze(0).shape)
-    print("std_dev shape:", std_dev.shape)
-    print("epsilon shape:", epsilon.shape)
+    # print("logits shape:", logits.unsqueeze(0).shape)
+    # print("std_dev shape:", std_dev.shape)
+    # print("epsilon shape:", epsilon.shape)
     perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
