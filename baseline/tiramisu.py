@@ -11,7 +11,7 @@ class FCDenseNet(nn.Module):
     def __init__(self, in_channels=3, down_blocks=(5, 5, 5, 5, 5),
                  up_blocks=(5, 5, 5, 5, 5), bottleneck_layers=5,
                  growth_rate=16, out_chans_first_conv=48, n_classes=12,
-                 dropout=0.5, aleatoric=False):
+                 dropout=0.2, aleatoric=False):
         super().__init__()
         self.aleatoric = aleatoric
 
