@@ -141,6 +141,7 @@ def custom_cirterion(y_pred, y_true):
     prob_ave = torch.mean(softmax_outputs, 0)
 
     total_loss = _criterion(torch.log(prob_ave), y_true)
+    total_loss = total_loss.sum()
 
     # # log-likelihood
     # target_one_hot_encoding = torch.zeros_like(softmax_outputs)
