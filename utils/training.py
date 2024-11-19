@@ -231,7 +231,7 @@ def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
     Return
         test_loss, test_error
     """
-    model.train()  # train mode: turn on dropout
+    model.train()  # train mode: turn on dropout but weights are not updated
     test_loss = 0
     test_error = 0
     for data, target in test_loader:
