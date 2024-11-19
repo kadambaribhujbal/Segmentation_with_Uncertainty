@@ -178,10 +178,10 @@ def test(model, test_loader, criterion, epoch=1):
         with torch.no_grad():
             data = data.cuda()
 
-        target = data.cuda()
+        target = target.cuda()
 
         output = model(data)[0]
-        test_loss += criterion(output, target.squeeze(1)).data
+        test_loss += criterion(output, target).data
         pred = get_predictions(output)
         test_error += error(pred, target.data.cpu())
     test_loss /= len(test_loader)
