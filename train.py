@@ -143,12 +143,14 @@ def custom_cirterion(y_pred, y_true):
     target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2), 1)
     # target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2).expand(T, -1, -1, -1), 1)
     # avoid log(0) by adding 1e-8
-    log_likelihoods = torch.log((softmax_outputs * target_one_hot_encoding).sum(dim=2) + 1e-8) 
+    # log_likelihoods = torch.log((softmax_outputs * target_one_hot_encoding).sum(dim=2) + 1e-8) 
+    log_likelihoods = torch.log((softmax_outputs * target_one_hot_encoding).sum(dim=2) + 1e-5)
     # -ve log-likelihood loss (avg over T samples)
     nll_loss = -log_likelihoods.mean(dim=0)
     reg_loss = 0.5 * log_var.sum(dim=2).mean()
     # total
-    total_loss = nll_loss.sum() + reg_loss
+    # total_loss = nll_loss.sum() + reg_loss
+    total_loss = nll_loss.sum()
     return total_loss
 
 # iou
