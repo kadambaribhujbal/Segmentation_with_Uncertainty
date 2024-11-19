@@ -308,11 +308,18 @@ def adjust_learning_rate(lr, decay, optimizer, cur_epoch, n_epochs):
         param_group["lr"] = new_lr
 
 
+# def weights_init(m):
+#     if isinstance(m, nn.Conv2d):
+#         # nn.init.kaiming_uniform(m.weight)
+#         nn.init.kaiming_uniform_(m.weight)
+#         m.bias.data.zero_()
+
+# gaussian prior
 def weights_init(m):
     if isinstance(m, nn.Conv2d):
-        # nn.init.kaiming_uniform(m.weight)
-        nn.init.kaiming_uniform_(m.weight)
-        m.bias.data.zero_()
+        nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='relu')
+        if m.bias is not None:
+            m.bias.data.zero_()
 
 
 def predict(model, input_loader, n_batches=1):
