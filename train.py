@@ -118,23 +118,19 @@ def custom_cirterion(y_pred, y_true):
     logits, log_var = y_pred
     batch_size, num_classes, height, width = logits.size()
 
-    print("logits shape:", logits.shape)
-    print("log_var shape:", log_var.shape)
+    # print("logits shape:", logits.shape)
+    # print("log_var shape:", log_var.shape)
 
     # reshape to match predictions
     y_true = y_true.view(batch_size, -1)  
     logits = logits.view(batch_size, num_classes, -1)  
     log_var = log_var.view(batch_size, num_classes, -1) 
 
-    print("logits shape:", logits.shape)
-    print("log_var shape:", log_var.shape)
-
-    
-
     # equation 12 in the paper 
     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
     # std_dev = exp(log_var/2) [convert log_var to std dev]
-    std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
+    std_dev = torch.exp(0.5 * log_var).expand(-1, logits.size(1), -1, -1)  #same var value for all the 12 classes 
+    # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     # sample from the logits
     print("logits shape:", logits.unsqueeze(0).shape)
     print("std_dev shape:", std_dev.shape)
