@@ -181,7 +181,7 @@ def test(model, test_loader, criterion, epoch=1):
         target = data.cuda()
 
         output = model(data)[0]
-        test_loss += criterion(output, target).data
+        test_loss += criterion(output, target.squeeze(1)).data
         pred = get_predictions(output)
         test_error += error(pred, target.data.cpu())
     test_loss /= len(test_loader)
