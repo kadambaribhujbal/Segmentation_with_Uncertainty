@@ -124,7 +124,7 @@ def custom_cirterion(y_pred, y_true):
     # reshape to match predictions
     y_true = y_true.view(batch_size, -1)  
     logits = logits.view(batch_size, num_classes, -1)  
-    log_var = log_var.view(batch_size, num_classes, -1) 
+    log_var = log_var.view(batch_size, 1, -1) 
 
     # equation 12 in the paper 
     # sample random number from normal dist
