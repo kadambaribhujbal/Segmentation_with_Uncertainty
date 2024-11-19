@@ -126,13 +126,15 @@ def custom_cirterion(y_pred, y_true):
     # equation 12 in the paper 
     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
     # std_dev = exp(log_var/2) [convert log_var to std dev]
+    std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     # sample from the logits
-    perturbed_logits = logits.unsqueeze(0) + torch.exp(0.5 * log_var).unsqueeze(0) * epsilon
+    perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
     # log-likelihood
     target_one_hot_encoding = torch.zeros_like(softmax_outputs)
-    target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2).expand(T, -1, -1, -1), 1)
+    target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2), 1)
+    # target_one_hot_encoding.scatter_(2, y_true.unsqueeze(0).unsqueeze(2).expand(T, -1, -1, -1), 1)
     # avoid log(0) by adding 1e-8
     log_likelihoods = torch.log((softmax_outputs * target_one_hot_encoding).sum(dim=2) + 1e-8) 
     # -ve log-likelihood loss (avg over T samples)
