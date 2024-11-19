@@ -127,10 +127,10 @@ def custom_cirterion(y_pred, y_true):
     log_var = log_var.view(batch_size, num_classes, -1) 
 
     # equation 12 in the paper 
-    epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+    # sample random number from normal dist
+    epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
     # std_dev = exp(log_var/2) [convert log_var to std dev]
-    std_dev = torch.exp(0.5 * log_var).expand(-1, logits.size(1), -1, -1)  #same var value for all the 12 classes 
-    # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
+    std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     # sample from the logits
     print("logits shape:", logits.unsqueeze(0).shape)
     print("std_dev shape:", std_dev.shape)
