@@ -341,7 +341,8 @@ if __name__ == "__main__":
                 outputs = model(inputs)
                 
                 # Obtain predictions
-                preds = torch.argmax(outputs[0], dim=1) if mode != "base" else torch.argmax(outputs, dim=1)
+                # preds = torch.argmax(outputs[0], dim=1) if mode != "base" else torch.argmax(outputs, dim=1)
+                preds = torch.argmax(outputs[0], dim=1)
                 preds_np = preds.cpu().numpy()
                 targets_np = targets.cpu().numpy()
 
