@@ -109,7 +109,7 @@ def train(model, trn_loader, optimizer, criterion, epoch):
         targets = data[1].cuda()
 
         optimizer.zero_grad()
-        output = model(inputs)[0]  # [2, 12, 360, 480]
+        output = model(inputs)[0]  #only logits
         loss = criterion(output, targets)
         loss.backward()
         optimizer.step()
@@ -143,7 +143,7 @@ def train_aleatoric(model, trn_loader, optimizer, criterion, epoch):
 
 
         optimizer.zero_grad()
-        output, logvar = model(inputs)  # tuple of [output, log_var]
+        output, logvar = model(inputs)  # tuple of [logits, log_var]
         loss = criterion((output, logvar), targets)
         loss.backward()
         optimizer.step()
@@ -210,7 +210,7 @@ def test_aleatoric(model, test_loader, criterion, epoch=1):
         with torch.no_grad():
             data = data.cuda()
 
-        target = data.cuda()
+        target = target.cuda()
 
         output = model(data)
         test_loss += criterion(output, target).data
@@ -244,7 +244,7 @@ def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
         with torch.no_grad():
             data = data.cuda()
 
-        target = data.cuda()
+        target = target.cuda()
 
 
         outputs = model(data)[0].data
@@ -344,7 +344,7 @@ def view_sample_predictions(model, loader, n):
     # data = Variable(inputs.cuda(), volatile=True)
     # label = Variable(targets.cuda())
     with torch.no_grad():
-            data = data.cuda()
+            data = inputs.cuda()
     label = targets.cuda()
     
     output = model(data)[0]

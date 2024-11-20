@@ -102,49 +102,49 @@ utils.imgs.view_annotated(targets[0])
 _criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cuda()
 
 
-# def custom_cirterion(y_pred, y_true):
-#     """Aleatoric loss function
-#     See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
-#     """
-#     output, log_var = y_pred
-#     log_var = log_var[0]
-#     loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
-#     return loss.sum()
-
 def custom_cirterion(y_pred, y_true):
+    """Aleatoric loss function
+    See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
+    """
+    output, log_var = y_pred
+    log_var = log_var[0]
+    loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
+    return loss.sum()
+
+# def custom_cirterion(y_pred, y_true):
   
-    T=20 # number of mc samples for stochastic approximation
+#     T=20 # number of mc samples for stochastic approximation
 
-    logits, log_var = y_pred
-    batch_size, num_classes, height, width = logits.size()
+#     logits, log_var = y_pred
+#     batch_size, num_classes, height, width = logits.size()
 
-    # print("logits shape:", logits.shape)
-    # print("log_var shape:", log_var.shape)
+#     # print("logits shape:", logits.shape)
+#     # print("log_var shape:", log_var.shape)
 
-    # reshape to match predictions
-    y_true = y_true.view(batch_size, -1)  
-    logits = logits.view(batch_size, num_classes, -1)  
-    log_var = log_var.view(batch_size, 1, -1) 
+#     # reshape to match predictions
+#     y_true = y_true.view(batch_size, -1)  
+#     logits = logits.view(batch_size, num_classes, -1)  
+#     log_var = log_var.view(batch_size, 1, -1) 
 
-    # equation 12 in the paper 
-    # sample random number from normal dist
-    epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
-    # std_dev = exp(log_var/2) [convert log_var to std dev]
-    # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
+#     # equation 12 in the paper 
+#     # sample random number from normal dist
+#     epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
+#     # std_dev = exp(log_var/2) [convert log_var to std dev]
+#     std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     
-    # sample from the logits
-    # print("logits shape:", logits.unsqueeze(0).shape)
-    # print("std_dev shape:", std_dev.shape)
-    # print("epsilon shape:", epsilon.shape)
-    # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
-    perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
-    softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+#     # sample from the logits
+#     # print("logits shape:", logits.unsqueeze(0).shape)
+#     # print("std_dev shape:", std_dev.shape)
+#     # print("epsilon shape:", epsilon.shape)
+#     perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
+#     # perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
+#     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
-    prob_ave = torch.mean(softmax_outputs, 0)
+#     prob_ave = torch.mean(softmax_outputs, 0)
 
-    total_loss = _criterion(torch.log(prob_ave), y_true)
-    total_loss = total_loss.sum()
-    return total_loss
+#     total_loss = _criterion(torch.log(prob_ave), y_true)
+#     total_loss = total_loss.sum()
+#     return total_loss
 
 # iou
 def iou_calculation(pred, target, n_classes=12):
