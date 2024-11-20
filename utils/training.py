@@ -80,7 +80,7 @@ def get_epistemic(outputs, predictive_mean, test_trials=20):
     for i in range(test_trials):
         output_sq = torch.einsum(
             "bchw,bchw->bhw", [outputs[i], outputs[i]]
-        ).data  # 질문하기
+        ).data 
         result += output_sq - target_sq
     result /= test_trials
     return result
