@@ -13,6 +13,6 @@ def get_hyperparams():
         "n_epoch": 20,
         "model": "FCDenseNet103",
         # "mode": "combined",
-        "mode": "base",
+        "mode": "epistemic",
     }
     return hyperprams
