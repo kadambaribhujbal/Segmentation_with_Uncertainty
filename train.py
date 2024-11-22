@@ -137,13 +137,13 @@ def custom_cirterion(y_pred, y_true):
     print("Log variance shape:", log_var.shape)
     print("Target shape:", y_true.shape)
 
-    perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
-    # perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
+    # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
+    perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
     prob_ave = torch.mean(softmax_outputs, 0)
 
-    total_loss = _criterion(torch.log(prob_ave), y_true)
+    total_loss = _criterion(torch.log(prob_ave + 1e-9), y_true)
     total_loss = total_loss.sum()
 
     print("Min probability:", prob_ave.min().item())
