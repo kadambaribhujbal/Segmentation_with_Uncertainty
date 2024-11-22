@@ -235,7 +235,7 @@ def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
     test_loss = 0
     test_error = 0
     for data, target in test_loader:
-        print(torch.cuda.memory_allocated(device=0))
+        # print(torch.cuda.memory_allocated(device=0))
         if list(data.size())[0] != batch_size:
             break
         # data = Variable(data.cuda(), volatile=True)
