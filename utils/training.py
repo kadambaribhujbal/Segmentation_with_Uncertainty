@@ -459,33 +459,48 @@ def view_sample_predictions_with_uncertainty(
 #     train_loss: float, train_err: float, val_loss: float, val_error: float, epoch: int
 # ) -> None:
 
-#     save = hyper
-#     save["train_loss"] = train_loss
-#     save["train_err"] = train_err
-#     save["loss"] = val_loss
-#     save["error"] = val_error
-#     save_ = sorted(save.items(), key=(lambda x: x[0]))
-#     dataframe = pd.DataFrame(save_)
-#     dataframe.to_csv(
-#         "/content/results/{}-lr-{}-epoch-{}.csv".format(mode, lr, epoch), encoding="utf-8"
-#     )
+    # save = hyper
+    # save["train_loss"] = train_loss
+    # save["train_err"] = train_err
+    # save["loss"] = val_loss
+    # save["error"] = val_error
+    # save_ = sorted(save.items(), key=(lambda x: x[0]))
+    # dataframe = pd.DataFrame(save_)
+    # dataframe.to_csv(
+    #     "/content/results/{}-lr-{}-epoch-{}.csv".format(mode, lr, epoch), encoding="utf-8"
+    # )
 
 def save_result(epoch, train_loss, train_err, val_loss, val_err, iou, precision, recall, entropy) -> None:
     """
     Save the metrics for a given epoch.
     """
-    global results
 
-    results["epoch"].append(epoch)
-    results["train_loss"].append(train_loss)
-    results["train_err"].append(train_err)
-    results["val_loss"].append(val_loss)
-    results["val_err"].append(val_err)
-    results["iou"].append(iou)
-    results["precision"].append(precision)
-    results["recall"].append(recall)
-    results["entropy"].append(entropy)
+    save = hyper
+    save["train_loss"] = train_loss
+    save["train_err"] = train_err
+    save["val_loss"] = val_loss
+    save["val_err"] = val_err
+    save["iou"] = iou
+    save["precision"] = precision
+    save["recall"] = recall
+    save["entropy"] = entropy
+    save_ = sorted(save.items(), key=(lambda x: x[0]))
+    dataframe = pd.DataFrame(save_)
+    dataframe.to_csv(
+        "/content/results/{}-lr-{}-epoch-{}.csv".format(mode, lr, epoch), encoding="utf-8"
+    )
+    # global results
 
-    # Save the DataFrame to CSV after each epoch
-    df = pd.DataFrame(results)
-    df.to_csv("/content/results/{}-lr-{}-metrics.csv".format(mode, lr), index=False)
+    # results["epoch"].append(epoch)
+    # results["train_loss"].append(train_loss)
+    # results["train_err"].append(train_err)
+    # results["val_loss"].append(val_loss)
+    # results["val_err"].append(val_err)
+    # results["iou"].append(iou)
+    # results["precision"].append(precision)
+    # results["recall"].append(recall)
+    # results["entropy"].append(entropy)
+
+    # # Save the DataFrame to CSV after each epoch
+    # df = pd.DataFrame(results)
+    # df.to_csv("/content/results/{}-lr-{}-metrics.csv".format(mode, lr), index=False)
