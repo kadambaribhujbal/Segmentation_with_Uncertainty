@@ -209,7 +209,8 @@ elif mode == "epistemic":
     train = train_utils.train
 
 elif mode == "aleatoric":
-    model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
+    # model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
+    model = tiramisu.FCDenseNet103_aleatoric(n_classes=12, dropout=dropout).cuda()
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
     criterion = custom_cirterion
