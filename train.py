@@ -115,6 +115,8 @@ def custom_cirterion(y_pred, y_true):
   
     T=50 # number of mc samples for stochastic approximation
 
+    print(y_true)
+
     logits, log_var = y_pred
     batch_size, num_classes, height, width = logits.size()
 
@@ -133,28 +135,30 @@ def custom_cirterion(y_pred, y_true):
     std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     
     # sample from the logits
-    print("Logits shape:", logits.shape)
-    print("Log variance shape:", log_var.shape)
-    print("Target shape:", y_true.shape)
+    # print("Logits shape:", logits.shape)
+    # print("Log variance shape:", log_var.shape)
+    # print("Target shape:", y_true.shape)
 
     # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
     perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
+    # mean of T samples
     prob_ave = torch.mean(softmax_outputs, 0)
 
     total_loss = _criterion(torch.log(prob_ave + 1e-9), y_true)
     # total_loss = total_loss.sum()
     # total_loss = total_loss.sum() / y_true.numel()
 
+    # loss/number_of_pixels
     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
 
 
-    print("Min probability:", prob_ave.min().item())
-    print("Max probability:", prob_ave.max().item())
+    # print("Min probability:", prob_ave.min().item())
+    # print("Max probability:", prob_ave.max().item())
 
-    print("Target min:", y_true.min().item())
-    print("Target max:", y_true.max().item())
+    # print("Target min:", y_true.min().item())
+    # print("Target max:", y_true.max().item())
     
     return total_loss
 
