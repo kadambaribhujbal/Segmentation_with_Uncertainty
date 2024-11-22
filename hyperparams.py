@@ -12,7 +12,7 @@ def get_hyperparams():
         "decay_per_n_epoch": 1,
         "n_epoch": 20,
         "model": "FCDenseNet103",
-        "mode": "combined",
-        # "mode": "epistemic",
+        # "mode": "combined",
+        "mode": "aleatoric",
     }
     return hyperprams
