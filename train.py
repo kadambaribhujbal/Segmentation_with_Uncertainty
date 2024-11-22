@@ -121,11 +121,14 @@ def custom_cirterion(y_pred, y_true):
     # reshape to match predictions
     y_true = y_true.view(batch_size, -1)  
     logits = logits.view(batch_size, num_classes, -1)  
-    log_var = log_var.view(batch_size, 1, -1) 
+    # log_var = log_var.view(batch_size, 1, -1) 
+    log_var = log_var.view(batch_size, num_classes, -1) 
 
     # equation 12 in the paper 
     # sample random number from normal dist
-    epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
+    # epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
+
+    epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
     # std_dev = exp(log_var/2) [convert log_var to std dev]
     std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     
@@ -209,8 +212,7 @@ elif mode == "epistemic":
     train = train_utils.train
 
 elif mode == "aleatoric":
-    # model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
-    model = tiramisu.FCDenseNet103_aleatoric(n_classes=12, dropout=dropout).cuda()
+    model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
     criterion = custom_cirterion

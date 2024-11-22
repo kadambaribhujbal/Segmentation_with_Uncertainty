@@ -10,9 +10,8 @@ def get_hyperparams():
         "lr_decay": 0.995,
         # "lr_decay": 1e-4,
         "decay_per_n_epoch": 1,
-        "n_epoch": 20,
-        # "model": "FCDenseNet103",
-        "model": "FCDenseNet103_aleatoric",
+        "n_epoch": 2,
+        "model": "FCDenseNet103",
         # "mode": "combined",
         "mode": "aleatoric",
     }
