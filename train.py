@@ -145,7 +145,10 @@ def custom_cirterion(y_pred, y_true):
 
     total_loss = _criterion(torch.log(prob_ave + 1e-9), y_true)
     # total_loss = total_loss.sum()
-    total_loss = total_loss.sum() / y_true.numel()
+    # total_loss = total_loss.sum() / y_true.numel()
+
+    total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
+
 
     print("Min probability:", prob_ave.min().item())
     print("Max probability:", prob_ave.max().item())
