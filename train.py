@@ -102,14 +102,14 @@ utils.imgs.view_annotated(targets[0])
 _criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cuda()
 
 
-def custom_cirterion(y_pred, y_true):
-    """Aleatoric loss function
-    See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
-    """
-    output, log_var = y_pred
-    log_var = log_var[0]
-    loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
-    return loss.sum()
+# def custom_cirterion(y_pred, y_true):
+#     """Aleatoric loss function
+#     See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
+#     """
+#     output, log_var = y_pred
+#     log_var = log_var[0]
+#     loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
+#     return loss.sum()
 
 def custom_cirterion(y_pred, y_true):
   
@@ -144,14 +144,15 @@ def custom_cirterion(y_pred, y_true):
     prob_ave = torch.mean(softmax_outputs, 0)
 
     total_loss = _criterion(torch.log(prob_ave + 1e-9), y_true)
-    total_loss = total_loss.sum()
+    # total_loss = total_loss.sum()
+    total_loss = total_loss.sum() / y_true.numel()
 
     print("Min probability:", prob_ave.min().item())
     print("Max probability:", prob_ave.max().item())
 
     print("Target min:", y_true.min().item())
     print("Target max:", y_true.max().item())
-    # total_loss = total_loss.sum() / y_true.numel()
+    
     return total_loss
 
 # iou
