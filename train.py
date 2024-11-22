@@ -115,13 +115,8 @@ def custom_cirterion(y_pred, y_true):
   
     T=50 # number of mc samples for stochastic approximation
 
-    print(y_true)
-
     logits, log_var = y_pred
     batch_size, num_classes, height, width = logits.size()
-
-    # print("logits shape:", logits.shape)
-    # print("log_var shape:", log_var.shape)
 
     # reshape to match predictions
     y_true = y_true.view(batch_size, -1)  
@@ -135,10 +130,6 @@ def custom_cirterion(y_pred, y_true):
     std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     
     # sample from the logits
-    # print("Logits shape:", logits.shape)
-    # print("Log variance shape:", log_var.shape)
-    # print("Target shape:", y_true.shape)
-
     # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
     perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
@@ -146,19 +137,10 @@ def custom_cirterion(y_pred, y_true):
     # mean of T samples
     prob_ave = torch.mean(softmax_outputs, 0)
 
-    total_loss = _criterion(torch.log(prob_ave + 1e-9), y_true)
-    # total_loss = total_loss.sum()
-    # total_loss = total_loss.sum() / y_true.numel()
+    total_loss = _criterion(torch.log(prob_ave + 1e-8), y_true)
 
     # loss/number_of_pixels
     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
-
-
-    # print("Min probability:", prob_ave.min().item())
-    # print("Max probability:", prob_ave.max().item())
-
-    # print("Target min:", y_true.min().item())
-    # print("Target max:", y_true.max().item())
     
     return total_loss
 
@@ -199,7 +181,7 @@ def precision_recall(pred, target, n_classes=12):
 # entropy
 def compute_entropy_map(prob_map):
     prob_map = prob_map.cpu().numpy()
-    entropy_map = -np.sum(prob_map * np.log(prob_map + 1e-12), axis=0)
+    entropy_map = -np.sum(prob_map * np.log(prob_map + 1e-8), axis=0)
     return entropy_map
 
 # hyperparameters
@@ -277,12 +259,15 @@ if __name__ == "__main__":
         #     break
         # else:
         #     val_tmp = val_loss
-        save_result(trn_loss, trn_err, val_loss, val_err, epoch)
+
+        # save_result(trn_loss, trn_err, val_loss, val_err, epoch)
 
         with torch.no_grad():
             iou_epoch = []
             precision_epoch = []
             recall_epoch = []
+            entropy_epoch = []
+
             for inputs, targets in val_loader:
                 inputs, targets = inputs.cuda(), targets.cuda()
                 outputs = model(inputs)
@@ -304,33 +289,27 @@ if __name__ == "__main__":
                     entropy_map = compute_entropy_map(prob_map)
                     entropies.append(entropy_map.mean())
 
+            iou_mean = np.mean(iou_epoch)
+            precision_mean = np.mean(precision_epoch)
+            recall_mean = np.mean(recall_epoch)
+            entropy_mean = np.mean(entropies) if entropies else 0
+
             iou_scores.append(np.mean(iou_epoch))
             precisions.append(np.mean(precision_epoch))
             recalls.append(np.mean(recall_epoch))
+            entropies.append(entropy_mean)
 
             print(f"IoU: {iou_scores[-1]:.4f}, Precision: {precisions[-1]:.4f}, Recall: {recalls[-1]:.4f}")
 
-        train_utils.adjust_learning_rate(LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS)
+        save_result(epoch, trn_loss, trn_err, val_loss, val_err, iou_mean, precision_mean, recall_mean, entropy_mean)
 
-    # Save final model weights
-    # weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
-    # torch.save({
-    #     'epoch': epoch,
-    #     'model_state_dict': model.state_dict(),
-    #     'optimizer_state_dict': optimizer.state_dict(),
-    #     'val_loss': val_loss,
-    #     'val_err': val_err,
-    # }, weights_filename)
-    # print(f"Model weights saved to {weights_filename}")
+        train_utils.adjust_learning_rate(LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS)
 
     weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
     torch.save({
-        # 'epoch': epoch,
         'startEpoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
-        # 'val_loss': val_loss,
-        # 'val_err': val_err,
         'train_loss': trn_loss,
         'train_err': trn_err,
         'loss': val_loss,
