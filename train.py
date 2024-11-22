@@ -141,16 +141,16 @@ def custom_cirterion(y_pred, y_true):
     # perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
+    prob_ave = torch.mean(softmax_outputs, 0)
+
+    total_loss = _criterion(torch.log(prob_ave), y_true)
+    total_loss = total_loss.sum()
+
     print("Min probability:", prob_ave.min().item())
     print("Max probability:", prob_ave.max().item())
 
     print("Target min:", y_true.min().item())
     print("Target max:", y_true.max().item())
-
-    prob_ave = torch.mean(softmax_outputs, 0)
-
-    total_loss = _criterion(torch.log(prob_ave), y_true)
-    total_loss = total_loss.sum()
     # total_loss = total_loss.sum() / y_true.numel()
     return total_loss
 
