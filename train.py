@@ -133,12 +133,11 @@ def custom_cirterion(y_pred, y_true):
     std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     
     # sample from the logits
-    # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
-    perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
+    perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
+    # perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
     print("Perturbed logits shape:", perturbed_logits.shape)
 
-    # softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
-    softmax_outputs = nn.functional.softmax(perturbed_logits, dim=1)
+    softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
     # mean of T samples
     prob_ave = torch.mean(softmax_outputs, 0)
