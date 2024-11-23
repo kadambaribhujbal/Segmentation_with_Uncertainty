@@ -314,7 +314,7 @@ if __name__ == "__main__":
 
         save_result(epoch, trn_loss, trn_err, val_loss, val_err, iou_mean, precision_mean, recall_mean, entropy_mean)
 
-        train_utils.adjust_learning_rate(LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS)
+        # train_utils.adjust_learning_rate(LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS)
 
     weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
     torch.save({
