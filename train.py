@@ -146,11 +146,6 @@ def custom_cirterion(y_pred, y_true):
 
     # loss/number_of_pixels
     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
-
-    # print("Log var range:", log_var.min().item(), log_var.max().item())
-    # print("Logits range:", logits.min().item(), logits.max().item())
-    # print("Prob_ave range:", prob_ave.min().item(), prob_ave.max().item())
-
     
     return total_loss
 
