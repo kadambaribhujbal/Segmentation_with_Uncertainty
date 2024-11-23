@@ -144,7 +144,7 @@ def custom_cirterion(y_pred, y_true):
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
     # mean of T samples
-    # prob_ave = torch.mean(softmax_outputs, 0)
+    prob_ave = torch.mean(softmax_outputs, 0)
 
     # Clip probabilities to avoid log(0)
     eps = 1e-6
