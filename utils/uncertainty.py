@@ -32,8 +32,8 @@ def get_epistemic_uncertainty(model, dataloader, test_trials):
         result = torch.tensor(np.zeros(batch_size, img_shape[0], img_shape[1]))
         for i in range(test_trials):
             output = model(data)[0]
-            output_sq = torch.einsum('bchw,bchw->bhw', [output, output]) # 질문하기
-            target_sq = torch.einsum('bchw,bchw->bhw', [target, target]) # 확인하기
+            output_sq = torch.einsum('bchw,bchw->bhw', [output, output]) 
+            target_sq = torch.einsum('bchw,bchw->bhw', [target, target]) 
             result += output_sq - target_sq
         result /= test_trials
     return result
@@ -41,8 +41,8 @@ def get_epistemic_uncertainty(model, dataloader, test_trials):
 def get_epistemic(output, predictive_mean, test_trials=20):
     result = torch.tensor(np.zeros(batch_size, img_shape[0], img_shape[1]))
     for i in range(test_trials):
-        output_sq = torch.einsum('bchw,bchw->bhw', [output, output])  # 질문하기
-        target_sq = torch.einsum('bchw,bchw->bhw', [predictive_mean, predictive_mean])  # 확인하기
+        output_sq = torch.einsum('bchw,bchw->bhw', [output, output])  
+        target_sq = torch.einsum('bchw,bchw->bhw', [predictive_mean, predictive_mean]) 
         result += output_sq - target_sq
     result /= test_trials
     return result
