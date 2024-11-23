@@ -86,7 +86,7 @@ def load_weights(model, fpath):
     return startEpoch
 
 
-
+# output the predicted class index
 def get_predictions(output_batch):
     bs, c, h, w = output_batch.size()
     tensor = output_batch.data
