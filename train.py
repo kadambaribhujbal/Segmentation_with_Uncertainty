@@ -140,7 +140,11 @@ def custom_cirterion(y_pred, y_true):
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
     # mean of T samples
-    prob_ave = torch.mean(softmax_outputs, 0)
+    # prob_ave = torch.mean(softmax_outputs, 0)
+
+    # Clip probabilities to avoid log(0)
+    eps = 1e-6
+    prob_ave = torch.clamp(prob_ave, min=eps)
 
     total_loss = _criterion(torch.log(prob_ave), y_true)
 
@@ -148,6 +152,39 @@ def custom_cirterion(y_pred, y_true):
     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
     
     return total_loss
+
+# def custom_cirterion(y_pred, y_true):
+  
+#     T=50 # number of mc samples for stochastic approximation
+
+#     logits, log_var = y_pred
+#     batch_size, num_classes, height, width = logits.size()
+
+#     # reshape to match predictions
+#     y_true = y_true.view(batch_size, -1)  
+#     logits = logits.view(batch_size, num_classes, -1)  
+#     log_var = log_var.view(batch_size, num_classes, -1) 
+
+#     # equation 12 in the paper 
+#     # sample random number from normal dist
+
+#     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+
+#     # sample from the logits
+#     perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
+#     # print("Perturbed logits shape:", perturbed_logits.shape)
+
+#     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+
+#     # mean of T samples
+#     prob_ave = torch.mean(softmax_outputs, 0)
+
+#     total_loss = _criterion(torch.log(prob_ave), y_true)
+
+#     # loss/number_of_pixels
+#     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
+    
+#     return total_loss
 
 # iou
 def iou_calculation(pred, target, n_classes=12):
@@ -329,30 +366,6 @@ if __name__ == "__main__":
     }, weights_filename)
     print(f"Model weights saved to {weights_filename}")
 
-    # Plot Training and Validation Accuracy
-    plt.figure(figsize=(12, 6))
-    plt.plot(range(1, N_EPOCHS + 1), train_accuracies, label="Training Accuracy", marker="o")
-    plt.plot(range(1, N_EPOCHS + 1), val_accuracies, label="Validation Accuracy", marker="o")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy")
-    plt.title("Training and Validation Accuracy vs. Epoch")
-    plt.legend()
-    plt.grid()
-    plt.savefig("/content/combined/accuracy_vs_epoch", bbox_inches="tight")
-    plt.show()
-
-    # Plot Training and Validation Loss
-    plt.figure(figsize=(12, 6))
-    plt.plot(range(1, N_EPOCHS + 1), train_losses, label="Training Loss", marker="o")
-    plt.plot(range(1, N_EPOCHS + 1), val_losses, label="Validation Loss", marker="o")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.title("Training and Validation Loss vs. Epoch")
-    plt.legend()
-    plt.grid()
-    plt.savefig("/content/combined/loss_vs_epoch", bbox_inches="tight")
-    plt.show()
-
     # Plot metrics after training
     plt.figure(figsize=(12, 8))
     plt.plot(range(1, len(iou_scores) + 1), iou_scores, label="IoU", marker="o")
@@ -389,4 +402,32 @@ if __name__ == "__main__":
     plt.grid()
     plt.savefig("/content/combined/precision_vs_recall", bbox_inches="tight") 
     plt.show()
-    time.sleep(5)
+    # time.sleep(5)
+
+
+    # Determine the range of epochs based on available data
+    epochs = range(1, len(train_accuracies) + 1)
+
+    # Plot Training and Validation Accuracy
+    plt.figure(figsize=(12, 6))
+    plt.plot(epochs, train_accuracies, label="Training Accuracy", marker="o")
+    plt.plot(epochs, val_accuracies, label="Validation Accuracy", marker="o")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title("Training and Validation Accuracy vs. Epoch")
+    plt.legend()
+    plt.grid()
+    plt.savefig("/content/combined/accuracy_vs_epoch", bbox_inches="tight")
+    plt.show()
+
+    # Plot Training and Validation Loss
+    plt.figure(figsize=(12, 6))
+    plt.plot(epochs, train_losses, label="Training Loss", marker="o")
+    plt.plot(epochs, val_losses, label="Validation Loss", marker="o")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training and Validation Loss vs. Epoch")
+    plt.legend()
+    plt.grid()
+    plt.savefig("/content/combined/loss_vs_epoch", bbox_inches="tight")
+    plt.show()
