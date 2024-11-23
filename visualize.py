@@ -23,6 +23,8 @@ hyper = get_hyperparams()
 dropout = hyper["dropout"]
 mode = hyper["mode"]
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 assert mode in ["base", "epistemic", "aleatoric", "combined"], "Wrong mode!"
 
 # CAMVID_PATH = Path('./CamVid/Camvid/')
@@ -99,7 +101,7 @@ else:
 
 # load combined model
 # model_path = "./trained_weights/model_epoch_10_val_loss_batch1_0.5dp_lr1e-4_lrdecay0.995_combined.pth"
-model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
+model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).to(device)
 load_weights(model, model_path)
 
 if __name__ == "__main__":

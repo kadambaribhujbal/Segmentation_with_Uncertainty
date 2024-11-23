@@ -24,11 +24,13 @@ img_shape = hyper['image_shape']
 mode = hyper['mode']
 lr = hyper['learning_rate']
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 def get_epistemic_uncertainty(model, dataloader, test_trials):
     model.train()
     for data, target in dataloader:
-        data = Variable(data.cuda(), volatile=True)
-        target = Variable(target.cuda(), volatile=True) # (batch_size, num_classes, height, width)
+        data = Variable(data.to(device), volatile=True)
+        target = Variable(target.to(device), volatile=True) # (batch_size, num_classes, height, width)
         result = torch.tensor(np.zeros(batch_size, img_shape[0], img_shape[1]))
         for i in range(test_trials):
             output = model(data)[0]

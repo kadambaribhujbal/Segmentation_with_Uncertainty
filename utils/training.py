@@ -19,6 +19,8 @@ from . import imgs as img_utils
 # RESULTS_PATH = ".results/"
 # WEIGHTS_PATH = ".weights/"
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 RESULTS_PATH = "/content/results/"
 WEIGHTS_PATH = "/content/weights/"
 
@@ -73,9 +75,12 @@ def get_predictions(output_batch):
 
 
 def get_epistemic(outputs, predictive_mean, test_trials=20):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     result = torch.tensor(
         np.zeros((batch_size, img_shape[0], img_shape[1]), dtype=np.float32)
-    ).cuda()
+    ).to(device)
     target_sq = torch.einsum("bchw,bchw->bhw", [predictive_mean, predictive_mean]).data
     for i in range(test_trials):
         output_sq = torch.einsum(
@@ -96,6 +101,9 @@ def error(preds, targets):
 
 
 def train(model, trn_loader, optimizer, criterion, epoch):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     model.train()
     trn_loss = 0
     trn_error = 0
@@ -105,8 +113,8 @@ def train(model, trn_loader, optimizer, criterion, epoch):
         # inputs = Variable(data[0].cuda())
         # targets = Variable(data[1].cuda())
 
-        inputs = data[0].cuda()
-        targets = data[1].cuda()
+        inputs = data[0].to(device)
+        targets = data[1].to(device)
 
         optimizer.zero_grad()
         output = model(inputs)[0]  #only logits
@@ -128,6 +136,8 @@ def train(model, trn_loader, optimizer, criterion, epoch):
 
 
 def train_aleatoric(model, trn_loader, optimizer, criterion, epoch):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     """Train aleatoric model"""
     model.train()
     trn_loss = 0
@@ -138,8 +148,8 @@ def train_aleatoric(model, trn_loader, optimizer, criterion, epoch):
         # inputs = Variable(data[0].cuda())
         # targets = Variable(data[1].cuda())
 
-        inputs = data[0].cuda()
-        targets = data[1].cuda()
+        inputs = data[0].to(device)
+        targets = data[1].to(device)
 
 
         optimizer.zero_grad()
@@ -159,6 +169,8 @@ def train_aleatoric(model, trn_loader, optimizer, criterion, epoch):
 
 
 def test(model, test_loader, criterion, epoch=1):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     """Baseline Test
     model: pytorch model
     test_loader: test data loader
@@ -176,9 +188,9 @@ def test(model, test_loader, criterion, epoch=1):
         # target = Variable(target.cuda())
 
         with torch.no_grad():
-            data = data.cuda()
+            data = data.to(device)
 
-        target = target.cuda()
+        target = target.to(device)
 
         output = model(data)[0]
         test_loss += criterion(output, target).data
@@ -191,6 +203,8 @@ def test(model, test_loader, criterion, epoch=1):
 
 
 def test_aleatoric(model, test_loader, criterion, epoch=1):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     """Baseline Test
     model: pytorch model
     test_loader: test data loader
@@ -208,9 +222,9 @@ def test_aleatoric(model, test_loader, criterion, epoch=1):
         # target = Variable(target.cuda())
 
         with torch.no_grad():
-            data = data.cuda()
+            data = data.to(device)
 
-        target = target.cuda()
+        target = target.to(device)
 
         output = model(data)
         test_loss += criterion(output, target).data
@@ -223,6 +237,8 @@ def test_aleatoric(model, test_loader, criterion, epoch=1):
 
 
 def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     """Epistemic model Test
     Please turn on Dropout!
     model: pytorch model
@@ -242,9 +258,9 @@ def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
         # target = Variable(target.cuda())
 
         with torch.no_grad():
-            data = data.cuda()
+            data = data.to(device)
 
-        target = target.cuda()
+        target = target.to(device)
 
 
         outputs = model(data)[0].data
@@ -262,6 +278,8 @@ def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
 
 
 def test_combined(model, test_loader, criterion, test_trials=20, epoch=1):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     """Combined model Test
     Please turn on Dropout!
     model: pytorch model
@@ -278,11 +296,11 @@ def test_combined(model, test_loader, criterion, test_trials=20, epoch=1):
             break
         # data = Variable(data.cuda(), volatile=True)
         with torch.no_grad():
-            data = data.cuda()
+            data = data.to(device)
 
         # target = Variable(target.cuda())
 
-        target = target.cuda()
+        target = target.to(device)
 
 
         outputs, log_var = model(data)
@@ -323,6 +341,8 @@ def weights_init(m):
 
 
 def predict(model, input_loader, n_batches=1):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     input_loader.batch_size = 1
     predictions = []
     model.eval()
@@ -331,8 +351,8 @@ def predict(model, input_loader, n_batches=1):
         # data = Variable(input.cuda(), volatile=True)
         # label = Variable(target.cuda())
         with torch.no_grad():
-            data = data.cuda()
-        label = target.cuda()
+            data = data.to(device)
+        label = target.to(device)
         output = model(data)
         pred = get_predictions(output)
         predictions.append([input, target, pred])
@@ -340,12 +360,14 @@ def predict(model, input_loader, n_batches=1):
 
 
 def view_sample_predictions(model, loader, n):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     inputs, targets = next(iter(loader))
     # data = Variable(inputs.cuda(), volatile=True)
     # label = Variable(targets.cuda())
     with torch.no_grad():
-            data = inputs.cuda()
-    label = targets.cuda()
+            data = inputs.to(device)
+    label = targets.to(device)
     
     output = model(data)[0]
     pred = get_predictions(output)
@@ -394,6 +416,8 @@ def view_sample_predictions(model, loader, n):
 def view_sample_predictions_with_uncertainty(
     model, inputs, targets, sample_id, test_trials=100
 ):
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     """
     Visualizes predictions with uncertainty (epistemic and aleatoric) for a given model and input.
 

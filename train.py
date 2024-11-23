@@ -23,6 +23,8 @@ hyper = get_hyperparams()
 dropout = hyper["dropout"]
 mode = hyper["mode"]
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 assert mode in ["base", "epistemic", "aleatoric", "combined"], "Wrong mode!"
 
 # CAMVID_PATH = Path('./CamVid/Camvid/')
@@ -99,7 +101,9 @@ utils.imgs.view_image(inputs[0])
 utils.imgs.view_annotated(targets[0])
 
 # _criterion = nn.NLLLoss2d(weight=camvid.class_weight.cuda(), reduction="none").cuda()
-_criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cuda()
+# _criterion = nn.NLLLoss(weight=camvid.class_weight.cuda(), reduction="none").cuda()
+class_weight = camvid.class_weight.to(device)
+_criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
 
 
 # def custom_cirterion(y_pred, y_true):
@@ -232,39 +236,76 @@ LR_DECAY = hyper["lr_decay"]
 DECAY_EVERY_N_EPOCHS = hyper["decay_per_n_epoch"]
 N_EPOCHS = hyper["n_epoch"]
 
-torch.cuda.manual_seed(0)
+# torch.cuda.manual_seed(0)
+
+torch.manual_seed(0)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(0)
+
+# if mode == "base":
+#     model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout)
+#     model.apply(train_utils.weights_init)
+#     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
+#     criterion = nn.NLLLoss(weight=camvid.class_weight.to(device)).to(device)
+#     test = train_utils.test
+#     train = train_utils.train
+
+# elif mode == "epistemic":
+#     model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout)
+#     model.apply(train_utils.weights_init)
+#     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
+#     criterion = nn.NLLLoss(weight=camvid.class_weight.to(device))
+#     test = train_utils.test_epistemic
+#     train = train_utils.train
+
+# elif mode == "aleatoric":
+#     model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout)
+#     model.apply(train_utils.weights_init)
+#     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
+#     criterion = custom_cirterion
+#     test = train_utils.test_aleatoric
+#     train = train_utils.train_aleatoric
+
+# elif mode == "combined":
+#     model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout)
+#     model.apply(train_utils.weights_init)
+#     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
+#     criterion = custom_cirterion
+#     test = train_utils.test_combined
+#     train = train_utils.train_aleatoric
 
 if mode == "base":
-    model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).cuda()
+    model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).to(device)
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = nn.NLLLoss(weight=camvid.class_weight.cuda()).cuda()
+    criterion = nn.NLLLoss(weight=camvid.class_weight.to(device), reduction="none")
     test = train_utils.test
     train = train_utils.train
 
 elif mode == "epistemic":
-    model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).cuda()
+    model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).to(device)
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = nn.NLLLoss(weight=camvid.class_weight.cuda()).cuda()
+    criterion = nn.NLLLoss(weight=camvid.class_weight.to(device), reduction="none")
     test = train_utils.test_epistemic
     train = train_utils.train
 
 elif mode == "aleatoric":
-    model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
+    model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).to(device)
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = custom_cirterion
+    criterion = custom_cirterion 
     test = train_utils.test_aleatoric
     train = train_utils.train_aleatoric
 
 elif mode == "combined":
-    model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).cuda()
+    model = tiramisu.FCDenseNet57_aleatoric(n_classes=12, dropout=dropout).to(device)
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = custom_cirterion
+    criterion = custom_cirterion 
     test = train_utils.test_combined
     train = train_utils.train_aleatoric
+
 
 train_losses = []
 val_losses = []
@@ -317,7 +358,9 @@ if __name__ == "__main__":
             entropy_epoch = []
 
             for inputs, targets in val_loader:
-                inputs, targets = inputs.cuda(), targets.cuda()
+                # inputs, targets = inputs.cuda(), targets.cuda()
+                inputs, targets = inputs.to(device), targets.to(device)
+
                 outputs = model(inputs)
                 
                 # Obtain predictions
@@ -402,32 +445,32 @@ if __name__ == "__main__":
     plt.grid()
     plt.savefig("/content/combined/precision_vs_recall", bbox_inches="tight") 
     plt.show()
-    # time.sleep(5)
+    time.sleep(5)
 
 
-    # Determine the range of epochs based on available data
-    epochs = range(1, len(train_accuracies) + 1)
+    # # Determine the range of epochs based on available data
+    # epochs = range(1, len(train_accuracies) + 1)
 
-    # Plot Training and Validation Accuracy
-    plt.figure(figsize=(12, 6))
-    plt.plot(epochs, train_accuracies, label="Training Accuracy", marker="o")
-    plt.plot(epochs, val_accuracies, label="Validation Accuracy", marker="o")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy")
-    plt.title("Training and Validation Accuracy vs. Epoch")
-    plt.legend()
-    plt.grid()
-    plt.savefig("/content/combined/accuracy_vs_epoch", bbox_inches="tight")
-    plt.show()
+    # # Plot Training and Validation Accuracy
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(epochs, train_accuracies, label="Training Accuracy", marker="o")
+    # plt.plot(epochs, val_accuracies, label="Validation Accuracy", marker="o")
+    # plt.xlabel("Epoch")
+    # plt.ylabel("Accuracy")
+    # plt.title("Training and Validation Accuracy vs. Epoch")
+    # plt.legend()
+    # plt.grid()
+    # plt.savefig("/content/combined/accuracy_vs_epoch", bbox_inches="tight")
+    # plt.show()
 
-    # Plot Training and Validation Loss
-    plt.figure(figsize=(12, 6))
-    plt.plot(epochs, train_losses, label="Training Loss", marker="o")
-    plt.plot(epochs, val_losses, label="Validation Loss", marker="o")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.title("Training and Validation Loss vs. Epoch")
-    plt.legend()
-    plt.grid()
-    plt.savefig("/content/combined/loss_vs_epoch", bbox_inches="tight")
-    plt.show()
+    # # Plot Training and Validation Loss
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(epochs, train_losses, label="Training Loss", marker="o")
+    # plt.plot(epochs, val_losses, label="Validation Loss", marker="o")
+    # plt.xlabel("Epoch")
+    # plt.ylabel("Loss")
+    # plt.title("Training and Validation Loss vs. Epoch")
+    # plt.legend()
+    # plt.grid()
+    # plt.savefig("/content/combined/loss_vs_epoch", bbox_inches="tight")
+    # plt.show()
