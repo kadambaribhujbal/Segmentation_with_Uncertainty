@@ -135,12 +135,13 @@ def custom_cirterion(y_pred, y_true):
     # sample from the logits
     # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
     perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
-    softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+    # softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+    softmax_outputs = nn.functional.softmax(perturbed_logits, dim=1)
 
     # mean of T samples
     prob_ave = torch.mean(softmax_outputs, 0)
 
-    total_loss = _criterion(torch.log(prob_ave + 1e-8), y_true)
+    total_loss = _criterion(torch.log(prob_ave), y_true)
 
     # loss/number_of_pixels
     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
