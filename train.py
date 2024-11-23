@@ -227,6 +227,12 @@ elif mode == "combined":
     test = train_utils.test_combined
     train = train_utils.train_aleatoric
 
+train_losses = []
+val_losses = []
+train_accuracies = []
+val_accuracies = []
+
+
 if __name__ == "__main__":
     # Initialize metric tracking
     iou_scores = []
@@ -320,6 +326,30 @@ if __name__ == "__main__":
 
     }, weights_filename)
     print(f"Model weights saved to {weights_filename}")
+
+    # Plot Training and Validation Accuracy
+    plt.figure(figsize=(12, 6))
+    plt.plot(range(1, N_EPOCHS + 1), train_accuracies, label="Training Accuracy", marker="o")
+    plt.plot(range(1, N_EPOCHS + 1), val_accuracies, label="Validation Accuracy", marker="o")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title("Training and Validation Accuracy vs. Epoch")
+    plt.legend()
+    plt.grid()
+    plt.savefig("/content/combined/accuracy_vs_epoch", bbox_inches="tight")
+    plt.show()
+
+    # Plot Training and Validation Loss
+    plt.figure(figsize=(12, 6))
+    plt.plot(range(1, N_EPOCHS + 1), train_losses, label="Training Loss", marker="o")
+    plt.plot(range(1, N_EPOCHS + 1), val_losses, label="Validation Loss", marker="o")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training and Validation Loss vs. Epoch")
+    plt.legend()
+    plt.grid()
+    plt.savefig("/content/combined/loss_vs_epoch", bbox_inches="tight")
+    plt.show()
 
     # Plot metrics after training
     plt.figure(figsize=(12, 8))
