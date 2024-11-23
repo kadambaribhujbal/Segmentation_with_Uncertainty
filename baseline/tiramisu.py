@@ -76,20 +76,20 @@ class FCDenseNet(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
         # 1 LOG_VAR
-        self.log_var = nn.Conv2d(cur_channels_count,
-                                 1,
-                                 kernel_size=1,
-                                 stride=1,
-                                 padding=0,
-                                 bias=True)
-
-        ### 12 LOG_VAR 
         # self.log_var = nn.Conv2d(cur_channels_count,
-        #                          n_classes,
+        #                          1,
         #                          kernel_size=1,
         #                          stride=1,
         #                          padding=0,
         #                          bias=True)
+
+        ### 12 LOG_VAR 
+        self.log_var = nn.Conv2d(cur_channels_count,
+                                 n_classes,
+                                 kernel_size=1,
+                                 stride=1,
+                                 padding=0,
+                                 bias=True)
 
 
     def forward(self, x):
