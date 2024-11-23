@@ -50,20 +50,41 @@ def save_weights(model, epoch, loss, err, mode):
     shutil.copyfile(weights_fpath, WEIGHTS_PATH + "latest.th")
 
 
-def load_weights(model, fpath):
-    print("loading weights '{}'".format(fpath))
+# def load_weights(model, fpath):
+#     print("loading weights '{}'".format(fpath))
 
-    weights = torch.load(fpath, weights_only=True)
-    # weights = torch.load(fpath)
+#     weights = torch.load(fpath, weights_only=True)
+#     # weights = torch.load(fpath)
+#     startEpoch = weights["startEpoch"]
+#     # model.load_state_dict(weights["state_dict"])
+#     model.load_state_dict(weights["model_state_dict"])
+#     print(
+#         "loaded weights (lastEpoch {}, loss {}, error {})".format(
+#             startEpoch - 1, weights["loss"], weights["error"]
+#         )
+#     )
+#     return startEpoch
+
+def load_weights(model, fpath):
+    print(f"Loading weights from '{fpath}'")
+
+    # Determine the appropriate device for loading
+    map_location = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Load the weights and map them to the correct device
+    weights = torch.load(fpath, map_location=map_location)
+
     startEpoch = weights["startEpoch"]
-    # model.load_state_dict(weights["state_dict"])
+    
+    # Load the model state dict
     model.load_state_dict(weights["model_state_dict"])
+
     print(
-        "loaded weights (lastEpoch {}, loss {}, error {})".format(
-            startEpoch - 1, weights["loss"], weights["error"]
-        )
+        f"Loaded weights (lastEpoch {startEpoch - 1}, loss {weights['loss']}, error {weights['error']})"
     )
+
     return startEpoch
+
 
 
 def get_predictions(output_batch):
