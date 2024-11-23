@@ -130,11 +130,11 @@ def custom_cirterion(y_pred, y_true):
 
     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
     # std_dev = exp(log_var/2) [convert log_var to std dev]
-    std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
+    # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     
     # sample from the logits
-    perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
-    # perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
+    # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
+    perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
     # print("Perturbed logits shape:", perturbed_logits.shape)
 
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
@@ -146,6 +146,11 @@ def custom_cirterion(y_pred, y_true):
 
     # loss/number_of_pixels
     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
+
+    # print("Log var range:", log_var.min().item(), log_var.max().item())
+    # print("Logits range:", logits.min().item(), logits.max().item())
+    # print("Prob_ave range:", prob_ave.min().item(), prob_ave.max().item())
+
     
     return total_loss
 
