@@ -135,7 +135,7 @@ def custom_cirterion(y_pred, y_true):
     # sample from the logits
     perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
     # perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
-    print("Perturbed logits shape:", perturbed_logits.shape)
+    # print("Perturbed logits shape:", perturbed_logits.shape)
 
     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
 
