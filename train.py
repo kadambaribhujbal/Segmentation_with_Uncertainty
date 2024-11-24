@@ -126,16 +126,16 @@ def custom_cirterion(y_pred, y_true):
     logits = logits.view(batch_size, num_classes, -1)  
 
     ### uncomment for 12 log_var values 
-    # log_var = log_var.view(batch_size, num_classes, -1) 
-    log_var = log_var.view(batch_size, 1, -1) 
+    log_var = log_var.view(batch_size, num_classes, -1) 
+    # log_var = log_var.view(batch_size, 1, -1) 
 
     # equation 12 in the paper 
     # sample random number from normal dist
 
     ### uncomment for 12 log_var values 
-    # epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+    epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
 
-    epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
+    # epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
 
     # std_dev = exp(log_var/2) [convert log_var to std dev]
     # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
@@ -321,7 +321,7 @@ if __name__ == "__main__":
     entropies = []
 
     # Define the checkpoint path inside the code
-    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/base_model_epoch_20_base_20thnov.pth"
+    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/24th_combine_12logvar_logits_epoch_75_val_loss_0.5515.pth"
 
     # Check if a checkpoint exists and load it
     if os.path.exists(checkpoint_path):
@@ -359,8 +359,8 @@ if __name__ == "__main__":
         val_loss, val_err = test(model, val_loader, criterion, epoch)
 
         # Convert tensors to floats for formatting
-        val_loss = val_loss.item() if isinstance(val_loss, torch.Tensor) else val_loss
-        val_err = val_err.item() if isinstance(val_err, torch.Tensor) else val_err
+        # val_loss = val_loss.item() if isinstance(val_loss, torch.Tensor) else val_loss
+        # val_err = val_err.item() if isinstance(val_err, torch.Tensor) else val_err
 
         print("Val - Loss: {:.4f} | Acc: {:.4f}".format(val_loss, 1 - val_err))
         

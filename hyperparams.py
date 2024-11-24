@@ -12,8 +12,8 @@ def get_hyperparams():
         "decay_per_n_epoch": 1,
         "n_epoch": 30,
         "model": "FCDenseNet103",
-        # "mode": "combined",
-        "mode": "base",
+        "mode": "combined",
+        # "mode": "base",
         # "mode": "aleatoric",
     }
     return hyperprams
