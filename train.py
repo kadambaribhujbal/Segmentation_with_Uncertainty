@@ -274,7 +274,9 @@ if mode == "base":
     model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).to(device)
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = nn.NLLLoss(weight=camvid.class_weight.to(device), reduction="none")
+    class_weight = camvid.class_weight.to(device)
+    criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
+    # criterion = nn.NLLLoss(weight=camvid.class_weight.to(device), reduction="none")
     test = train_utils.test
     train = train_utils.train
 
@@ -282,7 +284,9 @@ elif mode == "epistemic":
     model = tiramisu.FCDenseNet57(n_classes=12, dropout=dropout).to(device)
     model.apply(train_utils.weights_init)
     optimizer = torch.optim.RMSprop(model.parameters(), lr=LR, weight_decay=1e-4)
-    criterion = nn.NLLLoss(weight=camvid.class_weight.to(device), reduction="none")
+    class_weight = camvid.class_weight.to(device)
+    criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
+    # criterion = nn.NLLLoss(weight=camvid.class_weight.to(device), reduction="none")
     test = train_utils.test_epistemic
     train = train_utils.train
 
