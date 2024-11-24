@@ -140,6 +140,7 @@ def train(model, trn_loader, optimizer, criterion, epoch):
         optimizer.zero_grad()
         output = model(inputs)[0]  #only logits
         loss = criterion(output, targets)
+        loss = loss.mean()
         loss.backward()
         optimizer.step()
 
