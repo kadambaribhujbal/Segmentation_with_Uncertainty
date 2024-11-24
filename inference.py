@@ -11,10 +11,11 @@ import torch.nn.functional as F
 
 
 # Add 'baseline' folder to Python path
-sys.path.append('./baseline')
+# sys.path.append('./baseline')
 
 # Import tiramisu from the baseline folder
-from tiramisu import FCDenseNet57_aleatoric
+from baseline import tiramisu
+# from tiramisu import FCDenseNet57_aleatoric
 from utils.training import load_weights
 
 # Paths

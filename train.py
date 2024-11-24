@@ -163,6 +163,31 @@ def custom_cirterion(y_pred, y_true):
     
     return total_loss
 
+# _criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
+# def custom_cirterion(y_pred, y_true):
+  
+#     T=50 
+#     logits, log_var = y_pred
+#     batch_size, num_classes, height, width = logits.size()
+
+#     y_true = y_true.view(batch_size, -1)  
+#     logits = logits.view(batch_size, num_classes, -1)  
+
+#     log_var = log_var.view(batch_size, num_classes, -1) 
+
+#     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+#     perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
+#     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+#     prob_ave = torch.mean(softmax_outputs, 0)
+#     eps = 1e-6
+#     prob_ave = torch.clamp(prob_ave, min=eps)
+
+#     total_loss = _criterion(torch.log(prob_ave), y_true)
+
+#     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
+    
+#     return total_loss
+
 # iou
 def iou_calculation(pred, target, n_classes=12):
     pred = pred.flatten()
