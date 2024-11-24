@@ -421,18 +421,32 @@ if __name__ == "__main__":
 
         train_utils.adjust_learning_rate(LR, LR_DECAY, optimizer, epoch, DECAY_EVERY_N_EPOCHS)
 
-    weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
-    torch.save({
-        'startEpoch': epoch,
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'train_loss': trn_loss,
-        'train_err': trn_err,
-        'loss': val_loss,
-        'error': val_err,
+        # Save weights every 5 epochs
+        if epoch % 5 == 0:
+            weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
+            torch.save({
+                'startEpoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'train_loss': trn_loss,
+                'train_err': trn_err,
+                'loss': val_loss,
+                'error': val_err,
+            }, weights_filename)
+            print(f"Weights saved at {weights_filename}")
 
-    }, weights_filename)
-    print(f"Model weights saved to {weights_filename}")
+    # weights_filename = WEIGHTS_PATH / f"model_epoch_{epoch}_val_loss_{val_loss:.4f}.pth"
+    # torch.save({
+    #     'startEpoch': epoch,
+    #     'model_state_dict': model.state_dict(),
+    #     'optimizer_state_dict': optimizer.state_dict(),
+    #     'train_loss': trn_loss,
+    #     'train_err': trn_err,
+    #     'loss': val_loss,
+    #     'error': val_err,
+
+    # }, weights_filename)
+    # print(f"Model weights saved to {weights_filename}")
 
     # Plot metrics after training
     plt.figure(figsize=(12, 8))
