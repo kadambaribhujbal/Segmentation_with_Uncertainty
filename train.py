@@ -105,7 +105,6 @@ utils.imgs.view_annotated(targets[0])
 class_weight = camvid.class_weight.to(device)
 _criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
 
-
 # def custom_cirterion(y_pred, y_true):
 #     """Aleatoric loss function
 #     See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
@@ -163,39 +162,6 @@ def custom_cirterion(y_pred, y_true):
     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
     
     return total_loss
-
-# def custom_cirterion(y_pred, y_true):
-  
-#     T=50 # number of mc samples for stochastic approximation
-
-#     logits, log_var = y_pred
-#     batch_size, num_classes, height, width = logits.size()
-
-#     # reshape to match predictions
-#     y_true = y_true.view(batch_size, -1)  
-#     logits = logits.view(batch_size, num_classes, -1)  
-#     log_var = log_var.view(batch_size, num_classes, -1) 
-
-#     # equation 12 in the paper 
-#     # sample random number from normal dist
-
-#     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
-
-#     # sample from the logits
-#     perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
-#     # print("Perturbed logits shape:", perturbed_logits.shape)
-
-#     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
-
-#     # mean of T samples
-#     prob_ave = torch.mean(softmax_outputs, 0)
-
-#     total_loss = _criterion(torch.log(prob_ave), y_true)
-
-#     # loss/number_of_pixels
-#     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
-    
-#     return total_loss
 
 # iou
 def iou_calculation(pred, target, n_classes=12):
