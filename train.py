@@ -129,16 +129,16 @@ def custom_cirterion(y_pred, y_true):
     
 
     ### uncomment for 12 log_var values 
-    # log_var = log_var.view(batch_size, num_classes, -1) 
-    log_var = log_var.view(batch_size, 1, -1) 
+    log_var = log_var.view(batch_size, num_classes, -1) 
+    # log_var = log_var.view(batch_size, 1, -1) 
 
     # equation 12 in the paper 
     # sample random number from normal dist
 
     ### uncomment for 12 log_var values 
-    # epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+    epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
 
-    epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
+    # epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
 
     # std_dev = exp(log_var/2) [convert log_var to std dev]
     # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
@@ -327,10 +327,28 @@ if __name__ == "__main__":
     recalls = []
     entropies = []
 
+    # Define the checkpoint path inside the code
+    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/23rdnov_combined_12logvar_logits_30epoch_iou_36_3.pth"
+
+    # Check if a checkpoint exists and load it
+    if os.path.exists(checkpoint_path):
+        print(f"Loading checkpoint from {checkpoint_path}...")
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+        
+        # Load model weights and optimizer state
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        start_epoch = checkpoint['startEpoch'] + 1  # Resume from the next epoch
+        print(f"Checkpoint loaded. Resuming training from epoch {start_epoch}.")
+    else:
+        print("No checkpoint found. Starting training from scratch.")
+        start_epoch = 1  # Start from the first epoch
+
     # Training loop
     val_tmp = sys.maxsize
     print("Mode: {}".format(mode))
-    for epoch in range(1, N_EPOCHS + 1):
+    # for epoch in range(1, N_EPOCHS + 1):
+    for epoch in range(start_epoch, N_EPOCHS + 1):
         since = time.time()
         
         # Train
