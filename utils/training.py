@@ -214,6 +214,7 @@ def test(model, test_loader, criterion, epoch=1):
         target = target.to(device)
 
         output = model(data)[0]
+        # test_loss += criterion(output, target).item()
         test_loss += criterion(output, target).data
         pred = get_predictions(output)
         test_error += error(pred, target.data.cpu())
@@ -248,7 +249,9 @@ def test_aleatoric(model, test_loader, criterion, epoch=1):
         target = target.to(device)
 
         output = model(data)
+        # test_loss += criterion(output, target).item()
         test_loss += criterion(output, target).data
+
         pred = get_predictions(output[0])
         test_error += error(pred, target.data.cpu())
     test_loss /= len(test_loader)
@@ -286,10 +289,12 @@ def test_epistemic(model, test_loader, criterion, test_trials=20, epoch=1):
 
         outputs = model(data)[0].data
         for i in range(test_trials - 1):
+            # outputs += model(data)[0].data
             outputs += model(data)[0].data
         output = outputs / test_trials  # mean
         pred = get_predictions(output)
         test_loss += criterion(output, target).data
+        # test_loss += criterion(output, target).item()
         test_error += error(pred, target.data.cpu())
         torch.cuda.empty_cache()
     test_loss /= len(test_loader)
@@ -328,10 +333,15 @@ def test_combined(model, test_loader, criterion, test_trials=20, epoch=1):
         outputs = outputs.data
         for i in range(test_trials - 1):
             outputs += model(data)[0].data
+            # outputs += model(data)[0].detach()
         output = outputs / test_trials
         pred = get_predictions(output)
         test_loss += criterion((output, log_var), target).data
         test_error += error(pred, target.data.cpu())
+
+        # test_loss += criterion((output, log_var), target).item()
+        # test_error += error(pred, target.cpu())
+
         torch.cuda.empty_cache()
     test_loss /= len(test_loader)
     test_error /= len(test_loader)
