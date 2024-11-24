@@ -163,6 +163,9 @@ _criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
     
 #     return total_loss
 
+cross_entropy_criterion = nn.CrossEntropyLoss(weight=class_weight, reduction="none").to(device)
+
+
 def custom_cirterion(y_pred, y_true, cross_entropy_criterion):
 
     T = 50  # Number of samples for Monte Carlo estimation
