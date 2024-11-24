@@ -317,7 +317,7 @@ if __name__ == "__main__":
     entropies = []
 
     # Define the checkpoint path inside the code
-    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/24th_combine_12logvar_logits_65_val_loss_0.6331.pth"
+    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/base.pth"
 
     # Check if a checkpoint exists and load it
     if os.path.exists(checkpoint_path):
@@ -336,8 +336,8 @@ if __name__ == "__main__":
     # Training loop
     val_tmp = sys.maxsize
     print("Mode: {}".format(mode))
-    # for epoch in range(1, N_EPOCHS + 1):
-    for epoch in range(start_epoch, start_epoch + N_EPOCHS + 1):
+    for epoch in range(1, N_EPOCHS + 1):
+    # for epoch in range(start_epoch, start_epoch + N_EPOCHS + 1):
         since = time.time()
         
         # Train
