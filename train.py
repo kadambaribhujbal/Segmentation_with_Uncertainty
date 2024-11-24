@@ -357,6 +357,11 @@ if __name__ == "__main__":
 
         # Test
         val_loss, val_err = test(model, val_loader, criterion, epoch)
+
+        # Convert tensors to floats for formatting
+        val_loss = val_loss.item() if isinstance(val_loss, torch.Tensor) else val_loss
+        val_err = val_err.item() if isinstance(val_err, torch.Tensor) else val_err
+
         print("Val - Loss: {:.4f} | Acc: {:.4f}".format(val_loss, 1 - val_err))
         
         time_elapsed = time.time() - since
