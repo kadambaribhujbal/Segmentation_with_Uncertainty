@@ -163,8 +163,6 @@ _criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
     
 #     return total_loss
 
-
-
 def custom_cirterion(y_pred, y_true, cross_entropy_criterion):
 
     T = 50  # Number of samples for Monte Carlo estimation
@@ -335,7 +333,7 @@ if __name__ == "__main__":
     entropies = []
 
     # Define the checkpoint path inside the code
-    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/24th_combine_12logvar_logits_epoch_75_val_loss_0.5515.pth"
+    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/2224th_combine_12logvar_logits_epoch_75_val_loss_0.5515.pth"
 
     # Check if a checkpoint exists and load it
     if os.path.exists(checkpoint_path):
