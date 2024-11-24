@@ -125,19 +125,17 @@ def custom_cirterion(y_pred, y_true):
     y_true = y_true.view(batch_size, -1)  
     logits = logits.view(batch_size, num_classes, -1)  
 
-    
-
     ### uncomment for 12 log_var values 
-    log_var = log_var.view(batch_size, num_classes, -1) 
-    # log_var = log_var.view(batch_size, 1, -1) 
+    # log_var = log_var.view(batch_size, num_classes, -1) 
+    log_var = log_var.view(batch_size, 1, -1) 
 
     # equation 12 in the paper 
     # sample random number from normal dist
 
     ### uncomment for 12 log_var values 
-    epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+    # epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
 
-    # epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
+    epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
 
     # std_dev = exp(log_var/2) [convert log_var to std dev]
     # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
