@@ -112,7 +112,7 @@ class FCDenseNet(nn.Module):
             log_var = self.log_var(out)
         out_ = out_.view(batch_size, num_classes, img_shape[0], img_shape[1])
         ### SOFTMAX
-        out_ = self.softmax(out_)
+        # out_ = self.softmax(out_)
         return out_, log_var
 
 def FCDenseNet57(n_classes, dropout=0.5):
