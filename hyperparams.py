@@ -13,8 +13,8 @@ def get_hyperparams():
         "n_epoch": 30,
         "model": "FCDenseNet103",
         # "mode": "combined",
-        # "mode": "epistemic",
+        "mode": "epistemic",
         # "mode": "base",
-        "mode": "aleatoric",
+        # "mode": "aleatoric",
     }
     return hyperprams
