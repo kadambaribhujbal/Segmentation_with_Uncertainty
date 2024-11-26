@@ -106,17 +106,17 @@ utils.imgs.view_annotated(targets[0])
 class_weight = camvid.class_weight.to(device)
 _criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
 
-def custom_cirterion(y_pred, y_true):
-    """Aleatoric loss function
-    See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
-    """
-    output, log_var = y_pred
-    log_var = log_var[0]
-    loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
-    total_loss = loss.sum() / torch.flatten(y_true).size(0)
-    # total_loss = loss.sum() 
-    # return loss.sum()
-    return total_loss
+# def custom_cirterion(y_pred, y_true):
+#     """Aleatoric loss function
+#     See paper at 2.2 Heteroscedastic Aleatoric Uncertainty (5)
+#     """
+#     output, log_var = y_pred
+#     log_var = log_var[0]
+#     loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
+#     total_loss = loss.sum() / torch.flatten(y_true).size(0)
+#     # total_loss = loss.sum() 
+#     # return loss.sum()
+#     return total_loss
 
 
 ### logit ---> softmax ---> NLLoss
@@ -167,40 +167,40 @@ def custom_cirterion(y_pred, y_true):
     
 #     return total_loss
 
-# cross_entropy_criterion = nn.CrossEntropyLoss(weight=class_weight, reduction="none").to(device)
+cross_entropy_criterion = nn.CrossEntropyLoss(weight=class_weight, reduction="none").to(device)
 
-# def custom_cirterion(y_pred, y_true):
+def custom_cirterion(y_pred, y_true):
 
-#     T = 50  # Number of samples for Monte Carlo estimation
-#     logits, log_var = y_pred
+    T = 50  # Number of samples for Monte Carlo estimation
+    logits, log_var = y_pred
 
-#     batch_size, num_classes, height, width = logits.size()
+    batch_size, num_classes, height, width = logits.size()
     
-#     # Flatten the labels for comparison
-#     y_true_flat = y_true.view(batch_size, -1)  # Flatten labels to (B x H*W)
+    # Flatten the labels for comparison
+    y_true_flat = y_true.view(batch_size, -1)  # Flatten labels to (B x H*W)
     
-#     # Reshape logits and log_var for consistent operations
-#     logits_flat = logits.view(batch_size, num_classes, -1)  # (B x C x H*W)
-#     log_var_flat = log_var.view(batch_size, num_classes, -1)  # (B x C x H*W)
+    # Reshape logits and log_var for consistent operations
+    logits_flat = logits.view(batch_size, num_classes, -1)  # (B x C x H*W)
+    log_var_flat = log_var.view(batch_size, num_classes, -1)  # (B x C x H*W)
 
-#     # Perturb logits using random Gaussian noise scaled by log_var
-#     epsilon = torch.randn((T, batch_size, num_classes, logits_flat.size(-1)), device=logits.device)  # (T x B x C x H*W)
-#     perturbed_logits = logits_flat.unsqueeze(0) + torch.exp(0.5 * log_var_flat).unsqueeze(0) * epsilon  # (T x B x C x H*W)
+    # Perturb logits using random Gaussian noise scaled by log_var
+    epsilon = torch.randn((T, batch_size, num_classes, logits_flat.size(-1)), device=logits.device)  # (T x B x C x H*W)
+    perturbed_logits = logits_flat.unsqueeze(0) + torch.exp(0.5 * log_var_flat).unsqueeze(0) * epsilon  # (T x B x C x H*W)
 
-#     # Average over T samples
-#     logits_ave_flat = torch.mean(perturbed_logits, dim=0)  # (B x C x H*W)
+    # Average over T samples
+    logits_ave_flat = torch.mean(perturbed_logits, dim=0)  # (B x C x H*W)
 
-#     # Reshape logits_ave back to (B x C x H x W) for compatibility with criterion
-#     logits_ave = logits_ave_flat.view(batch_size, num_classes, height, width)
+    # Reshape logits_ave back to (B x C x H x W) for compatibility with criterion
+    logits_ave = logits_ave_flat.view(batch_size, num_classes, height, width)
     
-#     # Compute cross-entropy loss with custom criterion
-#     # No reduction is applied, so we manually normalize the loss
-#     per_pixel_loss = cross_entropy_criterion(logits_ave, y_true)  # Shape: (B x H x W)
+    # Compute cross-entropy loss with custom criterion
+    # No reduction is applied, so we manually normalize the loss
+    per_pixel_loss = cross_entropy_criterion(logits_ave, y_true)  # Shape: (B x H x W)
     
-#     # Normalize the loss across all valid pixels
-#     total_loss = per_pixel_loss.sum() / torch.flatten(y_true).size(0)
+    # Normalize the loss across all valid pixels
+    total_loss = per_pixel_loss.sum() / torch.flatten(y_true).size(0)
     
-#     return total_loss
+    return total_loss
 
 # iou
 def iou_calculation(pred, target, n_classes=12):
