@@ -113,8 +113,8 @@ def custom_cirterion(y_pred, y_true):
     output, log_var = y_pred
     log_var = log_var[0]
     loss = torch.exp(-1 * log_var) * 0.5 + _criterion(output, y_true) + 0.5 * log_var
-    # total_loss = loss.sum() / torch.flatten(y_true).size(0)
-    total_loss = loss.sum() 
+    total_loss = loss.sum() / torch.flatten(y_true).size(0)
+    # total_loss = loss.sum() 
     # return loss.sum()
     return total_loss
 
