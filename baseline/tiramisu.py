@@ -115,39 +115,39 @@ class FCDenseNet(nn.Module):
         # out_ = self.softmax(out_)
         return out_, log_var
 
-def FCDenseNet57(n_classes, dropout=0.5):
+def FCDenseNet57(n_classes, dropout=0.2):
     return FCDenseNet(
         in_channels=3, down_blocks=(4, 4, 4, 4, 4),
         up_blocks=(4, 4, 4, 4, 4), bottleneck_layers=4,
         growth_rate=12, out_chans_first_conv=48, n_classes=n_classes, dropout=dropout)
 
 
-def FCDenseNet67(n_classes, dropout=0.5):
+def FCDenseNet67(n_classes, dropout=0.2):
     return FCDenseNet(
         in_channels=3, down_blocks=(5, 5, 5, 5, 5),
         up_blocks=(5, 5, 5, 5, 5), bottleneck_layers=5,
         growth_rate=16, out_chans_first_conv=48, n_classes=n_classes, dropout=dropout)
 
 
-def FCDenseNet103(n_classes, dropout=0.5):
+def FCDenseNet103(n_classes, dropout=0.2):
     return FCDenseNet(
         in_channels=3, down_blocks=(4,5,7,10,12),
         up_blocks=(12,10,7,5,4), bottleneck_layers=15,
         growth_rate=16, out_chans_first_conv=48, n_classes=n_classes, dropout=dropout)
 
-def FCDenseNet57_aleatoric(n_classes, dropout=0.5):
+def FCDenseNet57_aleatoric(n_classes, dropout=0.2):
     return FCDenseNet(
         in_channels=3, down_blocks=(4, 4, 4, 4, 4),
         up_blocks=(4, 4, 4, 4, 4), bottleneck_layers=4,
         growth_rate=12, out_chans_first_conv=48, n_classes=n_classes, dropout=dropout, aleatoric=True)
 
-def FCDenseNet67_aleatoric(n_classes, dropout=0.5):
+def FCDenseNet67_aleatoric(n_classes, dropout=0.2):
     return FCDenseNet(
         in_channels=3, down_blocks=(5, 5, 5, 5, 5),
         up_blocks=(5, 5, 5, 5, 5), bottleneck_layers=5,
         growth_rate=16, out_chans_first_conv=48, n_classes=n_classes, dropout=dropout, aleatoric=True)
 
-def FCDenseNet103_aleatoric(n_classes, dropout=0.5):
+def FCDenseNet103_aleatoric(n_classes, dropout=0.2):
     """Add Heteroscedastic Aleatoric Uncertainty"""
     return FCDenseNet(
         in_channels=3, down_blocks=(4,5,7,10,12),
