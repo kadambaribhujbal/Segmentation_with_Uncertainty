@@ -120,88 +120,88 @@ _criterion = nn.NLLLoss(weight=class_weight, reduction="none").to(device)
 
 
 ### logit ---> softmax ---> NLLoss
-# def custom_cirterion(y_pred, y_true):
-  
-#     T=50 # number of mc samples for stochastic approximation
-
-#     logits, log_var = y_pred
-#     batch_size, num_classes, height, width = logits.size()
-
-#     # reshape to match predictions
-#     y_true = y_true.view(batch_size, -1)  
-#     logits = logits.view(batch_size, num_classes, -1)  
-
-#     ### uncomment for 12 log_var values 
-#     log_var = log_var.view(batch_size, num_classes, -1) 
-#     # log_var = log_var.view(batch_size, 1, -1) 
-
-#     # equation 12 in the paper 
-#     # sample random number from normal dist
-
-#     ### uncomment for 12 log_var values 
-#     epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
-
-#     # epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
-
-#     # std_dev = exp(log_var/2) [convert log_var to std dev]
-#     # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
-    
-#     # sample from the logits
-#     # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
-#     perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
-#     # print("Perturbed logits shape:", perturbed_logits.shape)
-
-#     softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
-
-#     # mean of T samples
-#     prob_ave = torch.mean(softmax_outputs, 0)
-
-#     # Clip probabilities to avoid log(0)
-#     eps = 1e-6
-#     prob_ave = torch.clamp(prob_ave, min=eps)
-
-#     total_loss = _criterion(torch.log(prob_ave), y_true)
-
-#     # loss/number_of_pixels
-#     total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
-    
-#     return total_loss
-
-# perturbate the logits --> cross entropy loss 
-cross_entropy_criterion = nn.CrossEntropyLoss(weight=class_weight, reduction="none").to(device)
-
 def custom_cirterion(y_pred, y_true):
+  
+    T=50 # number of mc samples for stochastic approximation
 
-    T = 50  # Number of samples for Monte Carlo estimation
     logits, log_var = y_pred
-
     batch_size, num_classes, height, width = logits.size()
-    
-    # Flatten the labels for comparison
-    y_true_flat = y_true.view(batch_size, -1)  # Flatten labels to (B x H*W)
-    
-    # Reshape logits and log_var for consistent operations
-    logits_flat = logits.view(batch_size, num_classes, -1)  # (B x C x H*W)
-    log_var_flat = log_var.view(batch_size, num_classes, -1)  # (B x C x H*W)
 
-    # Perturb logits using random Gaussian noise scaled by log_var
-    epsilon = torch.randn((T, batch_size, num_classes, logits_flat.size(-1)), device=logits.device)  # (T x B x C x H*W)
-    perturbed_logits = logits_flat.unsqueeze(0) + torch.exp(0.5 * log_var_flat).unsqueeze(0) * epsilon  # (T x B x C x H*W)
+    # reshape to match predictions
+    y_true = y_true.view(batch_size, -1)  
+    logits = logits.view(batch_size, num_classes, -1)  
 
-    # Average over T samples
-    logits_ave_flat = torch.mean(perturbed_logits, dim=0)  # (B x C x H*W)
+    ### uncomment for 12 log_var values 
+    log_var = log_var.view(batch_size, num_classes, -1) 
+    # log_var = log_var.view(batch_size, 1, -1) 
 
-    # Reshape logits_ave back to (B x C x H x W) for compatibility with criterion
-    logits_ave = logits_ave_flat.view(batch_size, num_classes, height, width)
+    # equation 12 in the paper 
+    # sample random number from normal dist
+
+    ### uncomment for 12 log_var values 
+    epsilon = torch.randn((T, batch_size, num_classes, logits.size(-1)), device=logits.device)
+
+    # epsilon = torch.randn((T, batch_size, 1, logits.size(-1)), device=logits.device)
+
+    # std_dev = exp(log_var/2) [convert log_var to std dev]
+    # std_dev = torch.exp(0.5 * log_var).unsqueeze(0)
     
-    # Compute cross-entropy loss with custom criterion
-    # No reduction is applied, so we manually normalize the loss
-    per_pixel_loss = cross_entropy_criterion(logits_ave, y_true)  # Shape: (B x H x W)
-    
-    # Normalize the loss across all valid pixels
-    total_loss = per_pixel_loss.sum() / torch.flatten(y_true).size(0)
+    # sample from the logits
+    # perturbed_logits = logits.unsqueeze(0) + std_dev * epsilon
+    perturbed_logits = logits.unsqueeze(0) + log_var * epsilon
+    # print("Perturbed logits shape:", perturbed_logits.shape)
+
+    softmax_outputs = nn.functional.softmax(perturbed_logits, dim=2)
+
+    # mean of T samples
+    prob_ave = torch.mean(softmax_outputs, 0)
+
+    # Clip probabilities to avoid log(0)
+    eps = 1e-6
+    prob_ave = torch.clamp(prob_ave, min=eps)
+
+    total_loss = _criterion(torch.log(prob_ave), y_true)
+
+    # loss/number_of_pixels
+    total_loss = total_loss.sum() / torch.flatten(y_true).size(0)
     
     return total_loss
+
+# perturbate the logits --> cross entropy loss 
+# cross_entropy_criterion = nn.CrossEntropyLoss(weight=class_weight, reduction="none").to(device)
+
+# def custom_cirterion(y_pred, y_true):
+
+#     T = 50  # Number of samples for Monte Carlo estimation
+#     logits, log_var = y_pred
+
+#     batch_size, num_classes, height, width = logits.size()
+    
+#     # Flatten the labels for comparison
+#     y_true_flat = y_true.view(batch_size, -1)  # Flatten labels to (B x H*W)
+    
+#     # Reshape logits and log_var for consistent operations
+#     logits_flat = logits.view(batch_size, num_classes, -1)  # (B x C x H*W)
+#     log_var_flat = log_var.view(batch_size, num_classes, -1)  # (B x C x H*W)
+
+#     # Perturb logits using random Gaussian noise scaled by log_var
+#     epsilon = torch.randn((T, batch_size, num_classes, logits_flat.size(-1)), device=logits.device)  # (T x B x C x H*W)
+#     perturbed_logits = logits_flat.unsqueeze(0) + torch.exp(0.5 * log_var_flat).unsqueeze(0) * epsilon  # (T x B x C x H*W)
+
+#     # Average over T samples
+#     logits_ave_flat = torch.mean(perturbed_logits, dim=0)  # (B x C x H*W)
+
+#     # Reshape logits_ave back to (B x C x H x W) for compatibility with criterion
+#     logits_ave = logits_ave_flat.view(batch_size, num_classes, height, width)
+    
+#     # Compute cross-entropy loss with custom criterion
+#     # No reduction is applied, so we manually normalize the loss
+#     per_pixel_loss = cross_entropy_criterion(logits_ave, y_true)  # Shape: (B x H x W)
+    
+#     # Normalize the loss across all valid pixels
+#     total_loss = per_pixel_loss.sum() / torch.flatten(y_true).size(0)
+    
+#     return total_loss
 
 # iou
 def iou_calculation(pred, target, n_classes=12):
@@ -338,7 +338,7 @@ if __name__ == "__main__":
     entropies = []
 
     # Define the checkpoint path inside the code
-    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/224thnov_combine_cross_entropy_model_epoch_25_val_loss_0.7889.pth"
+    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/24th_combine_12logvar_logits_model_epoch_80_val_loss_0.5395.pth"
 
     # Check if a checkpoint exists and load it
     if os.path.exists(checkpoint_path):
