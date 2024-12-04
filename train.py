@@ -338,7 +338,7 @@ if __name__ == "__main__":
     entropies = []
 
     # Define the checkpoint path inside the code
-    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/3rddec_combine_0.2_model_epoch_115_val_loss_0.4985.pth"
+    checkpoint_path = "/content/Segmentation_with_Uncertainty/trained_weights/3rddec_combine_0.2_model_epoch_125_val_loss_0.4528.pth"
 
     # Check if a checkpoint exists and load it
     if os.path.exists(checkpoint_path):
